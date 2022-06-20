@@ -14,7 +14,7 @@ namespace API.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<string> Get(string id) {
+		public async Task<string> Get(string id) { // TODO: 这里不能用 string，不然 Content-Type 就会变成 text/plain，好好写结构吧，别偷懒
 			if (string.IsNullOrWhiteSpace(id)) {
 				return "{\"code\":2,\"message\":\"视频ID格式有误！\"}";
 			}
