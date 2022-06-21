@@ -16,5 +16,6 @@
 	<ItemGroup>
 		<Using Include="Microsoft.AspNetCore.Mvc" />
 		<Using Include="System.Text.Json.Serialization" />
+		<Using Include="API.Models" />
 	</ItemGroup>
 </Project>

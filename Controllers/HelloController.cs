@@ -1,6 +1,4 @@
-﻿using API.Models;
-
-namespace API.Controllers {
+﻿namespace API.Controllers {
 	[ApiController]
 	[Route("[controller]")]
 	public class HelloController : ControllerBase {
