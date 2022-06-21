@@ -13,7 +13,7 @@ namespace API.Controllers {
 
 		[HttpGet]
 		public IP Get() {
-			return new() { IPAddress = HttpContext.Connection.RemoteIpAddress };
+			return new(HttpContext.Connection.RemoteIpAddress);
 		}
 	}
 }

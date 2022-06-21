@@ -1,6 +1,6 @@
 namespace API.Models {
-	public class QQName {
-		public int Code { get; set; } = 0;
+	public struct QQName {
+		public int Code { get; set; }
 		public string? Name { get; set; }
 		public string? Message { get; set; }
 	}
