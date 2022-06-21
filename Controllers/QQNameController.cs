@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+ï»¿using Microsoft.AspNetCore.Mvc;
 using API.Models;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -18,11 +18,11 @@ namespace API.Controllers {
 		[HttpGet]
 		public async Task<QQName> Get(string qq, bool debug = false) {
 			if (string.IsNullOrWhiteSpace(qq)) {
-				return new() { Code = 4, Message = "QQºÅÎª¿Õ£¡" };
+				return new() { Code = 4, Message = "QQå·ä¸ºç©ºï¼" };
 			}
 			Regex qqNum = new(@"^\d{5,13}$");
 			if (!qqNum.IsMatch(qq)) {
-				return new() { Code = 1, Message = "QQ ºÅÓ¦Îª5-13Î»Êı×Ö£¡" };
+				return new() { Code = 1, Message = "QQ å·åº”ä¸º5-13ä½æ•°å­—ï¼" };
 			}
 			using var hc = _httpClientFactory.CreateClient("Timeout5s");
 			hc.BaseAddress = new Uri("https://r.qzone.qq.com/fcg-bin/cgi_get_portrait.fcg");
@@ -35,10 +35,10 @@ namespace API.Controllers {
 					result = System.Web.HttpUtility.HtmlDecode(result).Replace(@"\", @"\\").Replace("\"", @"\""");
 					return new() { Code = 0, Name = result };
 				} else {
-					return new() { Code = 2, Message = "ÎŞ´Ë QQ ÕËºÅ£¡" };
+					return new() { Code = 2, Message = "æ— æ­¤ QQ è´¦å·ï¼" };
 				}
 			} catch {
-				return new() { Code = 3, Message = "ÎŞ·¨Á¬½Ó QQ API ·şÎñÆ÷£¡"};
+				return new() { Code = 3, Message = "æ— æ³•è¿æ¥ QQ API æœåŠ¡å™¨ï¼"};
 			}
 		}
 	}

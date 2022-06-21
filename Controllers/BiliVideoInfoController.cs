@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+ï»¿using Microsoft.AspNetCore.Mvc;
 using API.Models;
 using System.Text.RegularExpressions;
 
@@ -17,7 +17,7 @@ namespace API.Controllers {
 		[HttpGet]
 		public async Task<BiliVideoInfo> Get(string id) {
 			if (string.IsNullOrWhiteSpace(id)) {
-				return new() { Code = 2, Message = "ÊÓÆµID¸ñÊ½ÓĞÎó£¡" };
+				return new() { Code = 2, Message = "è§†é¢‘IDæ ¼å¼æœ‰è¯¯ï¼" };
 			}
 
 			Regex p = new(@"^(av(\d+)|BV[A-Za-z0-9]+)$");
@@ -29,10 +29,10 @@ namespace API.Controllers {
 				try {
 					return await hc.GetFromJsonAsync<BiliVideoInfo>(queryString).ConfigureAwait(false);
 				} catch {
-					return new() { Code = 1, Message = "ÎŞ·¨Á¬½ÓßÙÁ¨ßÙÁ¨·şÎñÆ÷£¡" };
+					return new() { Code = 1, Message = "æ— æ³•è¿æ¥å“”å“©å“”å“©æœåŠ¡å™¨ï¼" };
 				}
 			} else {
-				return new() { Code = 2, Message = "ÊÓÆµID¸ñÊ½ÓĞÎó£¡" };
+				return new() { Code = 2, Message = "è§†é¢‘IDæ ¼å¼æœ‰è¯¯ï¼" };
 			}
 		}
 	}

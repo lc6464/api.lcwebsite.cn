@@ -1,12 +1,12 @@
-namespace API.Models {
+ï»¿namespace API.Models {
 	public struct BiliVideoInfo {
 		/// <summary>
-		/// 0£º³É¹¦
-		/// -400£ºÇëÇó´íÎó
-		/// -403£ºÈ¨ÏŞ²»×ã
-		/// -404£ºÎŞÊÓÆµ
-		/// 62002£º¸å¼ş²»¿É¼û
-		/// 62004£º¸å¼şÉóºËÖĞ
+		/// 0ï¼šæˆåŠŸ
+		/// -400ï¼šè¯·æ±‚é”™è¯¯
+		/// -403ï¼šæƒé™ä¸è¶³
+		/// -404ï¼šæ— è§†é¢‘
+		/// 62002ï¼šç¨¿ä»¶ä¸å¯è§
+		/// 62004ï¼šç¨¿ä»¶å®¡æ ¸ä¸­
 		/// </summary>
 		public int Code { get; set; }
 		public string Message { get; set; }
@@ -15,57 +15,57 @@ namespace API.Models {
 	public struct BiliVideoInfoData {
 
 		/// <summary>
-		/// AV ºÅ
+		/// AV å·
 		/// </summary>
 		public ulong Aid { get; set; }
 
 		/// <summary>
-		/// BV ºÅ
+		/// BV å·
 		/// </summary>
 		public string Bvid { get; set; }
 
 		/// <summary>
-		/// ²¥·ÅÁ¿
+		/// æ’­æ”¾é‡
 		/// </summary>
 		public ulong View { get; set; }
 
 		/// <summary>
-		/// µ¯Ä»Á¿
+		/// å¼¹å¹•é‡
 		/// </summary>
 		public uint Danmaku { get; set; }
 
 		/// <summary>
-		/// ÆÀÂÛÁ¿
+		/// è¯„è®ºé‡
 		/// </summary>
 		public uint Reply { get; set; }
 
 		/// <summary>
-		/// ÊÕ²ØÁ¿
+		/// æ”¶è—é‡
 		/// </summary>
 		public uint Favorite { get; set; }
 
 		/// <summary>
-		/// Í¶±ÒÁ¿
+		/// æŠ•å¸é‡
 		/// </summary>
 		public uint Coin { get; set; }
 
 		/// <summary>
-		/// ·ÖÏíÁ¿
+		/// åˆ†äº«é‡
 		/// </summary>
 		public uint Share { get; set; }
 
 		/// <summary>
-		/// »ñÔŞÁ¿
+		/// è·èµé‡
 		/// </summary>
 		public uint Like { get; set; }
 
 		/// <summary>
-		/// ÊÇ·ñ½ûÖ¹×ªÔØ
+		/// æ˜¯å¦ç¦æ­¢è½¬è½½
 		/// </summary>
 		public byte No_reprint { get; set; }
 
 		/// <summary>
-		/// ÊÓÆµÀàĞÍ 1£ºÔ­´´  2£º×ªÔØ
+		/// è§†é¢‘ç±»å‹ 1ï¼šåŸåˆ›  2ï¼šè½¬è½½
 		/// </summary>
 		public byte Copyright { get; set; }
 	}
