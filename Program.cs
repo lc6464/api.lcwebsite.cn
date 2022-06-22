@@ -1,8 +1,15 @@
 ﻿var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.AddEventLog(eventLogSettings => {
+	eventLogSettings.LogName = "api.lcwebsite.cn";
+	eventLogSettings.SourceName = "Websites";
+});
+
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+builder.Services.AddMemoryCache();
 
 builder.Services.AddCors(options => {
 	options.AddDefaultPolicy(policy => {
@@ -24,7 +31,6 @@ builder.Services.AddCors(options => {
 			"http://www.lc6464.cn");
 	});
 });
-
 
 builder.Services.AddHttpClient("Timeout5s", httpClient => {
 	httpClient.Timeout = new(0, 0, 5);
