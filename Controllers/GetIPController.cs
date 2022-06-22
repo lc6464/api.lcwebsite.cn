@@ -11,10 +11,10 @@ namespace API.Controllers {
 		}
 
 		[HttpGet]
-		public IP Get() {
+		public IP Get() { // 获取 IP 地址
 			var connection = HttpContext.Connection;
 			var address = connection.RemoteIpAddress;
-			_logger.LogDebug("Hello! Client {}:{}", address?.AddressFamily == AddressFamily.InterNetworkV6 ? $"[{address}]" : address, connection.RemotePort);
+			_logger.LogDebug("GetIP: Client {}:{}", address?.AddressFamily == AddressFamily.InterNetworkV6 ? $"[{address}]" : address, connection.RemotePort);
 			return new(address);
 		}
 	}
