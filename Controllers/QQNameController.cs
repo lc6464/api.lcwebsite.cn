@@ -18,7 +18,8 @@ namespace API.Controllers {
 		[HttpGet]
 		public async Task<QQName> Get(string qq) {
 			Response.Headers.Remove("Cache-Control");
-			Response.Headers.Add("Cache-Control", "private,max-age=30");
+			Response.Headers.Add("Cache-Control", "private,max-age=120"); // 与滑动过期相匹配
+
 			string cacheKey = "QQNameAPI-" + qq;
 			if (_memoryCache.TryGetValue(cacheKey, out string? qqName)) {
 				_logger.LogDebug("QQ昵称 API 已命中内存缓存：{}: {}", cacheKey, qqName);
@@ -28,11 +29,11 @@ namespace API.Controllers {
 			using var hc = _httpClientFactory.CreateClient("Timeout5s");
 			hc.BaseAddress = new Uri("https://r.qzone.qq.com/fcg-bin/cgi_get_portrait.fcg");
 			try {
-				var result = Encoding.GetEncoding("GB18030").GetString(await hc.GetByteArrayAsync("?uins=" + qq).ConfigureAwait(false));
+				var result = Encoding.GetEncoding("GB18030").GetString(await hc.GetByteArrayAsync("?uins=" + qq).ConfigureAwait(false)); // Get 数据
 				Regex head = new(@$"portraitCallBack\(\{{""{qq}"":\[""http://qlogo\d\d?\.store\.qq\.com/qzone/{qq}/{qq}/100"",((\-)?\d{{1,8}},){{5}}""");
 				if (head.IsMatch(result)) {
 					string rawStr = result;
-					result = Regex.Replace(Regex.Replace(result, head.ToString(), ""), @""",(\-)?\d{1,8}\]\}\)", "");
+					result = Regex.Replace(Regex.Replace(result, head.ToString(), ""), @""",(\-)?\d{1,8}\]\}\)", ""); // 处理数据
 					result = System.Web.HttpUtility.HtmlDecode(result).Replace(@"\", @"\\").Replace("\"", @"\""");
 
 					using var entry = _memoryCache.CreateEntry(cacheKey); // 写入内存缓存
@@ -41,7 +42,7 @@ namespace API.Controllers {
 					entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10); // 绝对过期10分钟
 					_logger.LogDebug("QQ昵称 API 已写入内存缓存：{}: {}", cacheKey, result);
 
-					_logger.LogDebug("QQ昵称 API 成功匹配 {}: {}，原始数据：{}", qq, result, rawStr);
+					_logger.LogDebug("QQ昵称 API 成功获取 {}: {}，原始数据：{}", qq, result, rawStr);
 					return new() { Code = 0, Name = result };
 				} else {
 					using var entry = _memoryCache.CreateEntry(cacheKey); // 写入内存缓存
