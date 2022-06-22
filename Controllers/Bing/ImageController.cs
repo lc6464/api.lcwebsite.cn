@@ -1,10 +1,8 @@
-﻿using IO = System.IO;
-
-namespace API.Controllers {
+﻿namespace API.Controllers {
 	[ApiController]
-	[Route("Bing/[controller]/{id:int:range(0,7)?}")]
-	public class ImageController : ControllerBase {
-		private readonly ILogger<ImageController> _logger;
+	[Route("Bing/Image/{id:int:range(0,7)?}")]
+	public class BingImageController : ControllerBase {
+		private readonly ILogger<BingImageController> _logger;
 		private readonly IHttpClientFactory _httpClientFactory;
 		private readonly IWebHostEnvironment _webHostEnvironment;
 		private readonly IMemoryCache _memoryCache;
@@ -21,7 +19,7 @@ namespace API.Controllers {
 
 		private int _id;
 
-		public ImageController(ILogger<ImageController> logger, IHttpClientFactory httpClientFactory, IWebHostEnvironment webHostEnvironment, IMemoryCache memoryCache) {
+		public BingImageController(ILogger<BingImageController> logger, IHttpClientFactory httpClientFactory, IWebHostEnvironment webHostEnvironment, IMemoryCache memoryCache) {
 			_logger = logger;
 			_httpClientFactory = httpClientFactory;
 			_webHostEnvironment = webHostEnvironment;
@@ -138,7 +136,7 @@ namespace API.Controllers {
 		public async Task<string?> Get(int id = 0) {
 			Response.Headers.Remove("Cache-Control"); // 缓存控制响应头
 			TimeSpan cacheAge = DateTime.Today.AddDays(1) - DateTime.Now;
-			Response.Headers.Add("Cache-Control", "private,max-age=" + cacheAge.TotalSeconds); // 缓存时间
+			Response.Headers.Add("Cache-Control", "private,max-age=" + (int)cacheAge.TotalSeconds); // 缓存时间
 
 			_id = id;
 			DateTime target = DateTime.Today.AddDays(-id); // 当前时间和目标日期

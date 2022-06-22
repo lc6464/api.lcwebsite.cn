@@ -27,46 +27,46 @@
 		/// <summary>
 		/// 播放量
 		/// </summary>
-		public ulong View { get; set; }
+		//public ulong View { get; set; }
 
 		/// <summary>
 		/// 弹幕量
 		/// </summary>
-		public uint Danmaku { get; set; }
+		//public uint Danmaku { get; set; }
 
 		/// <summary>
 		/// 评论量
 		/// </summary>
-		public uint Reply { get; set; }
+		//public uint Reply { get; set; }
 
 		/// <summary>
 		/// 收藏量
 		/// </summary>
-		public uint Favorite { get; set; }
+		//public uint Favorite { get; set; }
 
 		/// <summary>
 		/// 投币量
 		/// </summary>
-		public uint Coin { get; set; }
+		//public uint Coin { get; set; }
 
 		/// <summary>
 		/// 分享量
 		/// </summary>
-		public uint Share { get; set; }
+		//public uint Share { get; set; }
 
 		/// <summary>
 		/// 获赞量
 		/// </summary>
-		public uint Like { get; set; }
+		//public uint Like { get; set; }
 
 		/// <summary>
 		/// 是否禁止转载
 		/// </summary>
-		public byte No_reprint { get; set; }
+		//public byte No_reprint { get; set; }
 
 		/// <summary>
 		/// 视频类型 1：原创  2：转载
 		/// </summary>
-		public byte Copyright { get; set; }
+		//public byte Copyright { get; set; }
 	}
 }
