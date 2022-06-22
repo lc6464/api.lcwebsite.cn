@@ -1,4 +1,6 @@
-﻿namespace API.Controllers {
+﻿using System.Net.Sockets;
+
+namespace API.Controllers {
 	[ApiController]
 	[Route("[controller]")]
 	public class HelloController : ControllerBase {
@@ -10,6 +12,9 @@
 
 		[HttpGet]
 		public Hello Get() {
+			var connection = HttpContext.Connection;
+			var address = connection.RemoteIpAddress;
+			_logger.LogDebug("Hello! Client {}:{}", address?.AddressFamily == AddressFamily.InterNetworkV6 ? $"[{address}]" : address, connection.RemotePort);
 			return new();
 		}
 	}

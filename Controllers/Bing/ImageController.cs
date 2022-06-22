@@ -138,8 +138,7 @@ namespace API.Controllers {
 		public async Task<string?> Get(int id = 0) {
 			Response.Headers.Remove("Cache-Control"); // 缓存控制响应头
 			TimeSpan cacheAge = DateTime.Today.AddDays(1) - DateTime.Now;
-			//Response.Headers.Add("Cache-Control", "private,max-age=" + cacheAge.TotalSeconds); // 缓存时间
-			Response.Headers.Add("Cache-Control", "no-cache");
+			Response.Headers.Add("Cache-Control", "private,max-age=" + cacheAge.TotalSeconds); // 缓存时间
 
 			_id = id;
 			DateTime target = DateTime.Today.AddDays(-id); // 当前时间和目标日期
