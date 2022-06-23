@@ -49,8 +49,8 @@ builder.Services.AddResponseCompression(options => {
 	options.EnableForHttps = true;
 });
 
-builder.Services.AddHttpClient("Timeout5s", httpClient => {
-	httpClient.Timeout = new(0, 0, 5);
+builder.Services.AddHttpClient("Timeout5s", client => {
+	client.Timeout = new(0, 0, 5);
 });
 
 var app = builder.Build();
