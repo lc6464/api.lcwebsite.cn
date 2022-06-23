@@ -13,26 +13,24 @@
 		}
 
 		[HttpGet]
+		[ResponseCache(CacheProfileName = "Public1d")] // 与绝对过期时间匹配
 		public async Task<BiliVideoInfo> Get(string id) {
-			Response.Headers.Remove("Cache-Control");
-			Response.Headers.Add("Cache-Control", "private,max-age=600"); // 与滑动过期相匹配
-
 			string cacheKey = "BiliVideoInfoAPI-" + id;
 			if (_memoryCache.TryGetValue(cacheKey, out BiliVideoInfo info)) {
 				_logger.LogDebug("BiliVideoInfo API 已命中内存缓存：{}: {}", cacheKey, JsonSerializer.Serialize(info));
 				return info;
 			}
-            
+			
 			string queryString = (id[..2] == "av") ? string.Concat("?aid=", id.AsSpan(2)) : ("?bvid=" + id);
 			using var hc = _httpClientFactory.CreateClient("Timeout5s");
 			hc.BaseAddress = new Uri("https://api.bilibili.com/x/web-interface/archive/stat");
 			try {
 				info = await hc.GetFromJsonAsync<BiliVideoInfo>(queryString).ConfigureAwait(false);
-                
+				
 				using var entry = _memoryCache.CreateEntry(cacheKey); // 写入内存缓存
 				entry.Value = info;
-				entry.SlidingExpiration = TimeSpan.FromMinutes(10); // 滑动过期10分钟
-				entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(30); // 绝对过期1小时
+				entry.SlidingExpiration = TimeSpan.FromMinutes(15); // 滑动过期15分钟
+				entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1); // 绝对过期1天
 				_logger.LogDebug("BiliVideoInfo API 已写入内存缓存：{}: {}", cacheKey, JsonSerializer.Serialize(info));
 
 				return info;

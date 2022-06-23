@@ -134,7 +134,6 @@
 
 		[HttpGet]
 		public async Task<string?> Get(int id = 0) {
-			Response.Headers.Remove("Cache-Control"); // 缓存控制响应头
 			TimeSpan cacheAge = DateTime.Today.AddDays(1) - DateTime.Now;
 			Response.Headers.Add("Cache-Control", "private,max-age=" + (int)cacheAge.TotalSeconds); // 缓存时间
 

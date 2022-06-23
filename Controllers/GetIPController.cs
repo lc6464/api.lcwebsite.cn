@@ -11,6 +11,7 @@ namespace API.Controllers {
 		}
 
 		[HttpGet]
+		[ResponseCache(CacheProfileName = "Private1m")] // 客户端缓存1分钟
 		public IP Get() { // 获取 IP 地址
 			var connection = HttpContext.Connection;
 			var address = connection.RemoteIpAddress;

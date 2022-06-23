@@ -16,9 +16,8 @@ namespace API.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<QQName> Get(string qq) {
-			Response.Headers.Remove("Cache-Control");
-			Response.Headers.Add("Cache-Control", "private,max-age=120"); // 与滑动过期相匹配
+        [ResponseCache(CacheProfileName = "Private10m")] // 与绝对过期时间匹配
+        public async Task<QQName> Get(string qq) {
 
 			string cacheKey = "QQNameAPI-" + qq;
 			if (_memoryCache.TryGetValue(cacheKey, out string? qqName)) {
