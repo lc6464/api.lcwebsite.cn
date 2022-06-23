@@ -18,7 +18,9 @@
 		<Using Include="Microsoft.AspNetCore.Mvc" />
 		<Using Include="System.Text.Json" />
 		<Using Include="System.Text.Json.Serialization" />
+		<Using Include="API" />
 		<Using Include="API.Models" />
-		<Using Include="Microsoft.Extensions.Caching.Memory"/>
+		<Using Include="API.Services.Interfaces" />
+		<Using Include="Microsoft.Extensions.Caching.Memory" />
 	</ItemGroup>
 </Project>
