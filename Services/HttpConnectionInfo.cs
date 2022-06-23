@@ -1,7 +1,7 @@
 ﻿using System.Net;
 
 namespace API.Services;
-public class HttpConnectionInfo : Interfaces.IHttpConnectionInfo {
+public class HttpConnectionInfo : IHttpConnectionInfo {
 	public HttpConnectionInfo(HttpContext context) {
 		var connection = context.Connection;
 		RemoteAddress = connection.RemoteIpAddress;
