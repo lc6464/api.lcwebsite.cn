@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Text;
 using System.Security.Cryptography;
+using Microsoft.Extensions.Primitives;
 
 namespace API.Services;
 public class Http304 : IHttp304 {
@@ -8,9 +9,7 @@ public class Http304 : IHttp304 {
 	private readonly HttpResponse Response;
 	private readonly ILogger _logger;
 	private readonly IHttpConnectionInfo _connection;
-    private static readonly System.Reflection.Assembly _currentAssembly = System.Reflection.Assembly.GetExecutingAssembly();
-	private static readonly Version _version = _currentAssembly.GetName().Version ?? new ();
-	private static readonly DateTime _lastModified = File.GetLastWriteTime(_currentAssembly.Location);
+	private static readonly string _lastModified = File.GetLastWriteTime(System.Reflection.Assembly.GetExecutingAssembly().Location).ToString("R");
 
 	public Http304(HttpContext context, IHttpConnectionInfo connection, ILogger logger) {
 		Request = context.Request;
@@ -19,37 +18,74 @@ public class Http304 : IHttp304 {
 		_logger = logger;
 	}
 
-	public bool Set(bool withIP = false, string? value = "") {
-		value ??= "";
-		var ip = withIP ? _connection.RemoteAddress?.ToString() ?? "" : "";
-		
-		SHA256 sha256 = SHA256.Create();
-		
-		byte[] hash;
-        
-		string clientLM = Request.Headers["If-Modified-Since"],
-			clientETag = Request.Headers["If-None-Match"];
-		if (clientETag != null && clientLM == _lastModified.ToString("R") && clientETag.Length == 76) {
-			clientETag = clientETag.Substring(3, 72);
-			string clientSHA256 = string.Concat(clientETag.AsSpan(0, 32), clientETag.AsSpan(40)), clientSalt = clientETag.Substring(32, 8);
-			hash = sha256.ComputeHash(utf8.GetBytes(ip + clientSalt + refresh));
-			foreach (var h in hash) { sb.Append(h.ToString("X2")); }
-			SHA256 = sb.ToString(); sb.Clear();
-			if (clientSHA256 == SHA256) { sha256.Dispose(); Response.Clear(); Response.StatusCode = 304; }
-		}
-		string charList = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()_+{}|:\"<>?-=[]\\;',./"; // Salt 中可包含的字符列表
-		StringBuilder sb = new();
-		for (int i = 0; i < 8; i++) sb.Append(charList[Random.Shared.Next(charList.Length)]);
-		string salt = sb.ToString().ToUpper(), ETag;
-		sb.Clear();
-		hash = sha256.ComputeHash(utf8.GetBytes(ip + salt + refresh)); sha256.Dispose();
-		foreach (var h in hash) { sb.Append(h.ToString("X2")); }
-		SHA256 = sb.ToString(); sb.Clear();
-		ETag = string.Concat(SHA256.AsSpan(0, 32), salt, SHA256.AsSpan(32));
-        Response.Headers.Add("Last-Modified", LM); Response.Headers.Add("ETag", $"W/\"{ETag}\"");
+	/// <summary>
+	/// 强制指定是否设置 HTTP 304 状态码
+	/// </summary>
+	/// <param name="isSet">若为 <see cref="true"/> 则设置</param>
+	/// <returns>返回 <paramref name="isSet"/></returns>
+	public bool Set(bool isSet = true) {
+		if (isSet) {
+			_logger.LogDebug("Http304 服务：已设置 HTTP 304.");
 
-        _logger.LogDebug("Http304 服务：已手动设置")
-		// Set the 304 status code.
-		_context.Response.StatusCode = (int)HttpStatusCode.NotModified;
+			Response.Clear();
+
+			// Set the 304 status code.
+			Response.StatusCode = (int)HttpStatusCode.NotModified;
+		}
+		return isSet;
+	}
+
+	/// <summary>
+	/// HTTP 协商缓存验证客户端缓存有效性
+	/// </summary>
+	/// <param name="withIP">是否带上 IP 地址</param>
+	/// <param name="value">附加字符</param>
+	/// <returns>如果有效，则为 <see cref="true"/>；否则为 <see cref="false"/></returns>
+	public bool IsValid(bool withIP = false, string? value = null) {
+		value ??= "";
+		ReadOnlySpan<char> ip = withIP ? _connection.RemoteAddress?.ToString() ?? "" : "";
+
+		StringValues clientLastModifiedHeaders = Request.Headers["If-Modified-Since"],
+			clientETagHeaders = Request.Headers["If-None-Match"];
+
+		if (clientETagHeaders.Count == 1 && clientLastModifiedHeaders.Count == 1 && clientETagHeaders[0].Length == 40 && clientLastModifiedHeaders[0] == _lastModified) {
+			using SHA256 sha256 = SHA256.Create();
+			var clientETag = clientETagHeaders[0].AsSpan(1, 48);
+			ReadOnlySpan<char> clientSHA256 = string.Concat(clientETag[..22], clientETag[27..]),
+				clientSalt = clientETag[22..27];
+			byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(string.Concat(ip, clientSalt, value)));
+
+			return clientSHA256 == Convert.ToBase64String(hash)[..43];
+		}
+		return false;
+	}
+
+	/// <summary>
+	/// 验证客户端缓存有效性，若有效，则设置 HTTP 304
+	/// </summary>
+	/// <param name="withIP">是否带上 IP 地址</param>
+	/// <param name="value">附加字符</param>
+	/// <returns>若已设置，则返回 <see cref="true"/>；否则返回 <see cref="false"/> 并向客户端输出相关响应头</returns>
+	public bool TrySet(bool withIP = false, string? value = "") {
+		bool isValid = IsValid(withIP, value);
+
+		if (!isValid) { // 若无效
+			value ??= "";
+			ReadOnlySpan<char> ip = withIP ? _connection.RemoteAddress?.ToString() ?? "" : "";
+			
+			string charList = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()_+{}|:<>?-=[];',./"; // Salt 中可包含的字符列表
+			StringBuilder sb = new();
+			for (int i = 0; i < 5; i++) sb.Append(charList[Random.Shared.Next(charList.Length)]);
+			ReadOnlySpan<char> salt = sb.ToString();
+			sb.Clear();
+
+			using var sha256 = SHA256.Create();
+			ReadOnlySpan<char> hash = Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(string.Concat(ip, salt, value))));
+
+			Response.Headers.Add("Last-Modified", _lastModified);
+			Response.Headers.Add("ETag", $"\"{string.Concat(hash[..22], salt, hash[22..43])}\"");
+		}
+		
+		return Set(isValid);
 	}
 }
