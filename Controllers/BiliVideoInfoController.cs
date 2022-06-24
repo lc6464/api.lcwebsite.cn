@@ -5,18 +5,23 @@ public class BiliVideoInfoController : ControllerBase {
 	private readonly ILogger<BiliVideoInfoController> _logger;
 	private readonly IHttpClientFactory _httpClientFactory;
 	private readonly IMemoryCache _memoryCache;
+	private readonly IHttp304 _http304;
 
-	public BiliVideoInfoController(ILogger<BiliVideoInfoController> logger, IHttpClientFactory httpClientFactory, IMemoryCache memoryCache) {
+	public BiliVideoInfoController(ILogger<BiliVideoInfoController> logger, IHttpClientFactory httpClientFactory, IMemoryCache memoryCache, IHttp304 http304) {
 		_logger = logger;
 		_httpClientFactory = httpClientFactory;
 		_memoryCache = memoryCache;
+		_http304 = http304;
 	}
 
 	[HttpGet]
 	[ResponseCache(CacheProfileName = "Public1d")] // 与绝对过期时间匹配
-	public async Task<BiliVideoInfo> Get(string id) {
+	public async Task<BiliVideoInfo?> Get(string id) {
 		string cacheKey = "BiliVideoInfoAPI-" + id;
 		if (_memoryCache.TryGetValue(cacheKey, out BiliVideoInfo info)) {
+			if (_http304.TrySet(info.Code.ToString())) {
+				return null;
+			}
 			_logger.LogDebug("BiliVideoInfo API 已命中内存缓存：{}: {}", cacheKey, JsonSerializer.Serialize(info));
 			return info;
 		}
@@ -33,6 +38,9 @@ public class BiliVideoInfoController : ControllerBase {
 			entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1); // 绝对过期1天
 			_logger.LogDebug("BiliVideoInfo API 已写入内存缓存：{}: {}", cacheKey, JsonSerializer.Serialize(info));
 
+			if (_http304.TrySet(info.Code.ToString())) {
+				return null;
+			}
 			return info;
 		} catch (Exception e) {
 			_logger.LogCritical("BiliVideoInfo API 在 Get {} 时连接至哔哩哔哩服务器过程中发生异常：{}", id, e);

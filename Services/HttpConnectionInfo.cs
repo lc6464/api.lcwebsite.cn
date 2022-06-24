@@ -2,8 +2,8 @@
 
 namespace API.Services;
 public class HttpConnectionInfo : IHttpConnectionInfo {
-	public HttpConnectionInfo(HttpContext context) {
-		var connection = context.Connection;
+	public HttpConnectionInfo(IHttpContextAccessor accessor) {
+		var connection = accessor.HttpContext!.Connection;
 		RemoteAddress = connection.RemoteIpAddress;
 		RemotePort = connection.RemotePort;
 		LocalAddress = connection.LocalIpAddress!;

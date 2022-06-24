@@ -11,6 +11,7 @@ public class HelloController : ControllerBase {
 	}
 
 	[HttpGet]
+	[ResponseCache(CacheProfileName = "NoCache")]
 	public Hello Get() { // 打个招呼
 		var connection = HttpContext.Connection;
 		var address = connection.RemoteIpAddress;
