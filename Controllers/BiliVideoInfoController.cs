@@ -22,7 +22,7 @@ public class BiliVideoInfoController : ControllerBase {
 			if (_http304.TrySet(info.Code.ToString())) {
 				return null;
 			}
-			_logger.LogDebug("BiliVideoInfo API 已命中内存缓存：{}: {}", cacheKey, JsonSerializer.Serialize(info));
+			_logger.LogDebug("已命中内存缓存：{}: {}", cacheKey, JsonSerializer.Serialize(info));
 			return info;
 		}
 		
@@ -36,14 +36,14 @@ public class BiliVideoInfoController : ControllerBase {
 			entry.Value = info;
 			entry.SlidingExpiration = TimeSpan.FromMinutes(15); // 滑动过期15分钟
 			entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1); // 绝对过期1天
-			_logger.LogDebug("BiliVideoInfo API 已写入内存缓存：{}: {}", cacheKey, JsonSerializer.Serialize(info));
+			_logger.LogDebug("已写入内存缓存：{}: {}", cacheKey, JsonSerializer.Serialize(info));
 
 			if (_http304.TrySet(info.Code.ToString())) {
 				return null;
 			}
 			return info;
 		} catch (Exception e) {
-			_logger.LogCritical("BiliVideoInfo API 在 Get {} 时连接至哔哩哔哩服务器过程中发生异常：{}", id, e);
+			_logger.LogCritical("在 Get {} 时连接至哔哩哔哩服务器过程中发生异常：{}", id, e);
 			return new() { Code = 1, Message = "无法连接哔哩哔哩服务器！" };
 		}
 	}

@@ -62,8 +62,6 @@ app.UseCors();
 
 app.UseResponseCaching();
 
-app.UseAuthorization();
-
 System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
 app.Run();

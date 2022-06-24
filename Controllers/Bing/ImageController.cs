@@ -57,7 +57,7 @@ public class BingImageController : ControllerBase {
 					var root = await hc.GetFromJsonAsync<BingAPIRoot>($"?format=js&n={_lines - i - 1}&idx={_id}").ConfigureAwait(false);
 
 					if (root.Images == null) {
-						_logger.LogCritical("必应图片 API 获取到的 URL 为空！");
+						_logger.LogCritical("获取到的 URL 为空！");
 						return "未获取到 URL！";
 					}
 
@@ -73,20 +73,17 @@ public class BingImageController : ControllerBase {
 						}
 						writer.Flush();
 
-						_logger.LogDebug("必应图片 API 写入缓存文件成功。");
+						_logger.LogDebug("写入缓存文件成功。");
 					} catch (Exception e) {
-						Response.Headers.Add("X-API-WriteCache-Error", "True");
-						_logger.LogError("必应图片 API 写入缓存文件时发生异常：{}", e);
+						_logger.LogError("写入缓存文件时发生异常：{}", e);
 					}
 					return root.Images[0].Url;
 				} catch (Exception e) {
-					Response.Headers.Add("X-API-Get-Error", e.Message);
-					_logger.LogCritical("必应图片 API 在连接服务器时发生异常：{}", e);
-					return "连接必应服务器失败！";
+					_logger.LogCritical("在连接服务器时发生异常：{}", e);
+					return "连接必应服务器失败！\r\n" + e.Message;
 				}
 			} catch (Exception e) {
-				Response.Headers.Add("X-API-ReadCache-Error", "True");
-				_logger.LogCritical("必应图片 API 读取缓存文件时发生异常：{}", e);
+				_logger.LogCritical("读取缓存文件时发生异常：{}", e);
 				return "读取文件异常！";
 			}
 		} else { // 缓存文件不存在
@@ -101,7 +98,7 @@ public class BingImageController : ControllerBase {
 				var root = await hc.GetFromJsonAsync<BingAPIRoot>($"?format=js&n={_lines - i - 1}&idx={_id}").ConfigureAwait(false);
 
 				if (root.Images == null) {
-					_logger.LogCritical("必应图片 API 获取到的 URL 为空！");
+					_logger.LogCritical("获取到的 URL 为空！");
 					return "未获取到 URL！";
 				}
 
@@ -117,16 +114,14 @@ public class BingImageController : ControllerBase {
 					}
 					writer.Flush();
 
-					_logger.LogDebug("必应图片 API 写入缓存文件成功。");
+					_logger.LogDebug("写入缓存文件成功。");
 				} catch (Exception e) {
-					Response.Headers.Add("X-API-WriteCache-Error", "True");
-					_logger.LogError("必应图片 API 写入缓存文件时发生异常：{}", e);
+					_logger.LogError("写入缓存文件时发生异常：{}", e);
 				}
 				return root.Images[0].Url;
 			} catch (Exception e) {
-				Response.Headers.Add("X-API-Get-Error", e.Message);
-				_logger.LogCritical("必应图片 API 在连接服务器时发生异常：{}", e);
-				return "连接必应服务器失败！";
+				_logger.LogCritical("在连接服务器时发生异常：{}", e);
+				return "连接必应服务器失败！\r\n" + e.Message;
 			}
 		}
 	}
@@ -144,8 +139,8 @@ public class BingImageController : ControllerBase {
 
 		string cacheKey = "BingImageAPI-" + id;
 		if (_memoryCache.TryGetValue(cacheKey, out string url)) { // 内存缓存
-			_logger.LogDebug("必应图片 API 已命中内存缓存：{}", cacheKey);
-			_logger.LogDebug("必应图片 API 输出的 URL：{}", url);
+			_logger.LogDebug("已命中内存缓存：{}", cacheKey);
+			_logger.LogDebug("输出的 URL：{}", url);
 			Response.Redirect("https://cn.bing.com" + url); // 重定向
 			return "";
 		}
@@ -160,27 +155,21 @@ public class BingImageController : ControllerBase {
 				}
 				reader.BaseStream.Dispose();
 				if (string.IsNullOrWhiteSpace(line)) { // 指定行不存在或为空
-					_logger.LogDebug("必应图片 API 缓存文件 {} 对于行 {} 不存在或为空。", _filePath, _lines);
-					Response.Headers.Append("X-API-No-CacheLine", "True"); // X-API-无-缓存文件
+					_logger.LogDebug("缓存文件 {} 对应行 {} 不存在或为空。", _filePath, _lines);
 					url = await GetURLAndWriteFile().ConfigureAwait(false); // 获取并写入
 					if (url[0] != '/') { // 未获取到 URL
 						return url;
 					}
 				} else {
-					_logger.LogDebug("必应图片 API 已命中缓存文件 {} 行 {}。", _filePath, _lines);
+					_logger.LogDebug("已命中缓存文件 {} 行 {}。", _filePath, _lines);
 					url = line; // 赋值
 				}
 			} catch (Exception e) { // 若读取失败
-				Response.Headers.Add("X-API-Read-CacheFile-Error", "True"); // X-API-读取-缓存文件-出错
-				_logger.LogError("必应图片 API 读取缓存文件 {} 时发生异常：{}", _filePath, e);
-				url = await GetURLAndWriteFile().ConfigureAwait(false); // 重新获取并写入
-				if (url[0] != '/') { // 未获取到 URL
-					return url;
-				}
+				_logger.LogCritical("读取缓存文件时发生异常：{}", e);
+				return "读取文件异常！";
 			}
 		} else { // 若不存在
-			_logger.LogDebug("必应图片 API 缓存文件 {} 不存在。", _filePath);
-			Response.Headers.Append("X-API-No-CacheFile", "True"); // X-API-无-缓存文件
+			_logger.LogDebug("缓存文件 {} 不存在。", _filePath);
 			url = await GetURLAndWriteFile().ConfigureAwait(false); // 获取并写入
 			if (url[0] != '/') { // 未获取到 URL
 				return url;
@@ -189,8 +178,8 @@ public class BingImageController : ControllerBase {
 
 
 		_memoryCache.Set(cacheKey, url, cacheAge);
-		_logger.LogDebug("必应图片 API 已将 {} 写入缓存 {} ，有效时间 {}。", url, cacheKey, cacheAge);
-		_logger.LogDebug("必应图片 API 输出的 URL：{}", url);
+		_logger.LogDebug("已将 {} 写入内存缓存 {} ，有效时间 {}。", url, cacheKey, cacheAge);
+		_logger.LogDebug("输出的 URL：{}", url);
 		Response.Redirect("https://cn.bing.com" + url); // 重定向
 		return "";
 	}

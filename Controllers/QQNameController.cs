@@ -21,7 +21,7 @@ public class QQNameController : ControllerBase {
 
 		string cacheKey = "QQNameAPI-" + qq;
 		if (_memoryCache.TryGetValue(cacheKey, out string? qqName)) {
-			_logger.LogDebug("QQ昵称 API 已命中内存缓存：{}: {}", cacheKey, qqName);
+			_logger.LogDebug("已命中内存缓存：{}: {}", cacheKey, qqName);
 			return qqName == null ? new() { Code = 2, Message = "无此 QQ 账号！" } : new() { Code = 0, Name = qqName };
 		}
 
@@ -39,22 +39,22 @@ public class QQNameController : ControllerBase {
 				entry.Value = result;
 				entry.SlidingExpiration = TimeSpan.FromMinutes(2); // 滑动过期2分钟
 				entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10); // 绝对过期10分钟
-				_logger.LogDebug("QQ昵称 API 已写入内存缓存：{}: {}", cacheKey, result);
+				_logger.LogDebug("已写入内存缓存：{}: {}", cacheKey, result);
 
-				_logger.LogDebug("QQ昵称 API 成功获取 {}: {}，原始数据：{}", qq, result, rawStr);
+				_logger.LogDebug("成功获取 {}: {}，原始数据：{}", qq, result, rawStr);
 				return new() { Code = 0, Name = result };
 			} else {
 				using var entry = _memoryCache.CreateEntry(cacheKey); // 写入内存缓存
 				entry.Value = null;
 				entry.SlidingExpiration = TimeSpan.FromMinutes(2); // 滑动过期2分钟
 				entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10); // 绝对过期10分钟
-				_logger.LogDebug("QQ昵称 API 已写入内存缓存：{}: {}", cacheKey, null);
+				_logger.LogDebug("已写入内存缓存：{}: {}", cacheKey, null);
 
-				_logger.LogInformation("QQ昵称 API 获取 {} 时未能匹配，原始数据：{}", qq, result);
+				_logger.LogInformation("获取 {} 时未能匹配，原始数据：{}", qq, result);
 				return new() { Code = 2, Message = "无此 QQ 账号！" };
 			}
 		} catch (Exception e) {
-			_logger.LogCritical("QQ昵称 API 在 Get {} 时连接至QQ服务器过程中发生异常：{}", qq, e);
+			_logger.LogCritical("在 Get {} 时连接至QQ服务器过程中发生异常：{}", qq, e);
 			return new() { Code = 3, Message = "无法连接 QQ API 服务器！"};
 		}
 	}
