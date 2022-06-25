@@ -5,18 +5,18 @@ namespace API.Controllers;
 [Route("[controller]")]
 public class HelloController : ControllerBase {
 	private readonly ILogger<HelloController> _logger;
-	private readonly IHttpConnectionInfo _connection;
+	private readonly IHttpConnectionInfo _info;
 
-	public HelloController(ILogger<HelloController> logger, IHttpConnectionInfo connection) {
+	public HelloController(ILogger<HelloController> logger, IHttpConnectionInfo info) {
 		_logger = logger;
-		_connection = connection;
+		_info = info;
 	}
 
 	[HttpGet]
 	[ResponseCache(CacheProfileName = "NoCache")]
 	public Hello Get() { // 打个招呼
-		var address = _connection.RemoteAddress;
-		_logger.LogDebug("Hello! Client {}:{}", address?.AddressFamily == AddressFamily.InterNetworkV6 ? $"[{address}]" : address, _connection.RemotePort);
-		return new();
+		var address = _info.RemoteAddress;
+		_logger.LogDebug("Hello! Client {}:{} on {}", address?.AddressFamily == AddressFamily.InterNetworkV6 ? $"[{address}]" : address, _info.RemotePort, _info.Protocol);
+		return new(_info);
 	}
 }

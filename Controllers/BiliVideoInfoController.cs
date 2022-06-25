@@ -19,16 +19,15 @@ public class BiliVideoInfoController : ControllerBase {
 	public async Task<BiliVideoInfo?> Get(string id) {
 		string cacheKey = "BiliVideoInfoAPI-" + id;
 		if (_memoryCache.TryGetValue(cacheKey, out BiliVideoInfo info)) {
-			if (_http304.TrySet(info.Code.ToString())) {
-				return null;
-			}
 			_logger.LogDebug("已命中内存缓存：{}: {}", cacheKey, JsonSerializer.Serialize(info));
+			
+			if (_http304.TrySet(info.Code.ToString())) return null;
 			return info;
 		}
 		
 		string queryString = (id[..2] == "av") ? string.Concat("?aid=", id.AsSpan(2)) : ("?bvid=" + id);
 		using var hc = _httpClientFactory.CreateClient("Timeout5s");
-		hc.BaseAddress = new Uri("https://api.bilibili.com/x/web-interface/archive/stat");
+		hc.BaseAddress = new("https://api.bilibili.com/x/web-interface/archive/stat");
 		try {
 			info = await hc.GetFromJsonAsync<BiliVideoInfo>(queryString).ConfigureAwait(false);
 			
@@ -38,9 +37,7 @@ public class BiliVideoInfoController : ControllerBase {
 			entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1); // 绝对过期1天
 			_logger.LogDebug("已写入内存缓存：{}: {}", cacheKey, JsonSerializer.Serialize(info));
 
-			if (_http304.TrySet(info.Code.ToString())) {
-				return null;
-			}
+			if (_http304.TrySet(info.Code.ToString())) return null;
 			return info;
 		} catch (Exception e) {
 			_logger.LogCritical("在 Get {} 时连接至哔哩哔哩服务器过程中发生异常：{}", id, e);

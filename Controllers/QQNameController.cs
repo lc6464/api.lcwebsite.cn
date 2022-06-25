@@ -8,25 +8,30 @@ public class QQNameController : ControllerBase {
 	private readonly ILogger<QQNameController> _logger;
 	private readonly IHttpClientFactory _httpClientFactory;
 	private readonly IMemoryCache _memoryCache;
+	private readonly IHttp304 _http304;
 
-	public QQNameController(ILogger<QQNameController> logger, IHttpClientFactory httpClientFactory, IMemoryCache memoryCache) {
+	public QQNameController(ILogger<QQNameController> logger, IHttpClientFactory httpClientFactory, IMemoryCache memoryCache, IHttp304 http304) {
 		_logger = logger;
 		_httpClientFactory = httpClientFactory;
 		_memoryCache = memoryCache;
+		_http304 = http304;
 	}
 
 	[HttpGet]
 	   [ResponseCache(CacheProfileName = "Private10m")] // 与绝对过期时间匹配
-	   public async Task<QQName> Get(string qq) {
+	   public async Task<QQName?> Get(string qq) {
 
 		string cacheKey = "QQNameAPI-" + qq;
 		if (_memoryCache.TryGetValue(cacheKey, out string? qqName)) {
 			_logger.LogDebug("已命中内存缓存：{}: {}", cacheKey, qqName);
+			
+			if (_http304.TrySet($"{qqName == null}|{qqName}")) return null;
+			
 			return qqName == null ? new() { Code = 2, Message = "无此 QQ 账号！" } : new() { Code = 0, Name = qqName };
 		}
 
 		using var hc = _httpClientFactory.CreateClient("Timeout5s");
-		hc.BaseAddress = new Uri("https://r.qzone.qq.com/fcg-bin/cgi_get_portrait.fcg");
+		hc.BaseAddress = new("https://r.qzone.qq.com/fcg-bin/cgi_get_portrait.fcg");
 		try {
 			var result = Encoding.GetEncoding("GB18030").GetString(await hc.GetByteArrayAsync("?uins=" + qq).ConfigureAwait(false)); // Get 数据
 			Regex head = new(@$"portraitCallBack\(\{{""{qq}"":\[""http://qlogo\d\d?\.store\.qq\.com/qzone/{qq}/{qq}/100"",((\-)?\d{{1,8}},){{5}}""");
@@ -42,6 +47,9 @@ public class QQNameController : ControllerBase {
 				_logger.LogDebug("已写入内存缓存：{}: {}", cacheKey, result);
 
 				_logger.LogDebug("成功获取 {}: {}，原始数据：{}", qq, result, rawStr);
+
+				if (_http304.TrySet($"{false}|{result}")) return null;
+				
 				return new() { Code = 0, Name = result };
 			} else {
 				using var entry = _memoryCache.CreateEntry(cacheKey); // 写入内存缓存
@@ -51,6 +59,9 @@ public class QQNameController : ControllerBase {
 				_logger.LogDebug("已写入内存缓存：{}: {}", cacheKey, null);
 
 				_logger.LogInformation("获取 {} 时未能匹配，原始数据：{}", qq, result);
+				
+				if (_http304.TrySet($"{true}|{null}")) return null;
+
 				return new() { Code = 2, Message = "无此 QQ 账号！" };
 			}
 		} catch (Exception e) {

@@ -130,7 +130,6 @@ public class BingImageController : ControllerBase {
 	[HttpGet]
 	public async Task<string?> Get(int id = 0) {
 		TimeSpan cacheAge = DateTime.Today.AddDays(1) - DateTime.Now;
-		Response.Headers.Add("Cache-Control", "private,max-age=" + (int)cacheAge.TotalSeconds); // 缓存时间
 
 		_id = id;
 		DateTime target = DateTime.Today.AddDays(-id); // 当前时间和目标日期
@@ -142,7 +141,7 @@ public class BingImageController : ControllerBase {
 			_logger.LogDebug("已命中内存缓存：{}", cacheKey);
 			_logger.LogDebug("输出的 URL：{}", url);
 			Response.Redirect("https://cn.bing.com" + url); // 重定向
-			return "";
+			return null;
 		}
 
 		_fileInfo = new(_filePath);
@@ -158,6 +157,7 @@ public class BingImageController : ControllerBase {
 					_logger.LogDebug("缓存文件 {} 对应行 {} 不存在或为空。", _filePath, _lines);
 					url = await GetURLAndWriteFile().ConfigureAwait(false); // 获取并写入
 					if (url[0] != '/') { // 未获取到 URL
+						Response.Headers.Add("Cache-Control", "private,max-age=10"); // 发生异常时缓存 10 秒
 						return url;
 					}
 				} else {
@@ -166,21 +166,24 @@ public class BingImageController : ControllerBase {
 				}
 			} catch (Exception e) { // 若读取失败
 				_logger.LogCritical("读取缓存文件时发生异常：{}", e);
+				Response.Headers.Add("Cache-Control", "private,max-age=10"); // 发生异常时缓存 10 秒
 				return "读取文件异常！";
 			}
 		} else { // 若不存在
 			_logger.LogDebug("缓存文件 {} 不存在。", _filePath);
 			url = await GetURLAndWriteFile().ConfigureAwait(false); // 获取并写入
 			if (url[0] != '/') { // 未获取到 URL
+				Response.Headers.Add("Cache-Control", "private,max-age=10"); // 发生异常时缓存 10 秒
 				return url;
 			}
 		}
 
 
+		Response.Headers.Add("Cache-Control", "public,max-age=" + (int)cacheAge.TotalSeconds); // 缓存时间
 		_memoryCache.Set(cacheKey, url, cacheAge);
 		_logger.LogDebug("已将 {} 写入内存缓存 {} ，有效时间 {}。", url, cacheKey, cacheAge);
 		_logger.LogDebug("输出的 URL：{}", url);
 		Response.Redirect("https://cn.bing.com" + url); // 重定向
-		return "";
+		return null;
 	}
 }
