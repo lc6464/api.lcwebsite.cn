@@ -10,7 +10,7 @@ builder.Services.AddHttpContextAccessor()
 			policy.AllowAnyHeader();
 			policy.AllowAnyMethod();
 			policy.AllowCredentials();
-			policy.SetPreflightMaxAge(TimeSpan.FromDays(10));
+			policy.SetPreflightMaxAge(TimeSpan.FromDays(1));
 			policy.WithOrigins("https://lcwebsite.cn",
 				"https://d.lcwebsite.cn",
 				"https://test.lcwebsite.cn",
