@@ -43,10 +43,10 @@ public class Http304 : IHttp304 {
 
 		ReadOnlySpan<char> ip = withIP ? _info.RemoteAddress?.ToString() ?? "" : "";
 
-        StringValues clientLastModifiedHeaders = Request.Headers.IfModifiedSince,
+		StringValues clientLastModifiedHeaders = Request.Headers.IfModifiedSince,
 			clientETagHeaders = Request.Headers.IfNoneMatch;
 
-        if (clientETagHeaders.Count == 1 && clientLastModifiedHeaders.Count == 1 && clientETagHeaders[0].Length == 50 && clientLastModifiedHeaders[0] == _lastModified) {
+		if (clientETagHeaders.Count == 1 && clientLastModifiedHeaders.Count == 1 && clientETagHeaders[0].Length == 50 && clientLastModifiedHeaders[0] == _lastModified) {
 
 			using SHA256 sha256 = SHA256.Create();
 			var clientETag = clientETagHeaders[0].AsSpan(1, 48);
@@ -93,16 +93,12 @@ public class Http304 : IHttp304 {
 	/// </summary>
 	/// <param name="value">附加字符</param>
 	/// <returns>如果有效，则为 <see cref="true"/>；否则为 <see cref="false"/></returns>
-	public bool IsValid(string value = "") {
-		return IsValid(false, value);
-	}
+	public bool IsValid(string value = "") => IsValid(false, value);
 
 	/// <summary>
 	/// 验证客户端缓存有效性，若有效，则设置 HTTP 304
 	/// </summary>
 	/// <param name="value">附加字符</param>
 	/// <returns>若已设置，则返回 <see cref="true"/>；否则返回 <see cref="false"/> 并向客户端输出相关响应头</returns>
-	public bool TrySet(string value = "") {
-		return TrySet(false, value);
-	}
+	public bool TrySet(string value = "") => TrySet(false, value);
 }
