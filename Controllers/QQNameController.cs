@@ -18,8 +18,8 @@ public class QQNameController : ControllerBase {
 	}
 
 	[HttpGet]
-	   [ResponseCache(CacheProfileName = "Private10m")] // 与绝对过期时间匹配
-	   public async Task<QQName?> Get(string qq) {
+	[ResponseCache(CacheProfileName = "Private10m")] // 与绝对过期时间匹配
+	public async Task<QQName?> Get(string qq) {
 
 		string cacheKey = "QQNameAPI-" + qq;
 		if (_memoryCache.TryGetValue(cacheKey, out string? qqName)) {

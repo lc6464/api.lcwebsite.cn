@@ -34,7 +34,7 @@ public class BingImageController : ControllerBase {
 	/// <returns>当前的 URL</returns>
 	private async Task<string> GetURLAndWriteFile() {
 		using var hc = _httpClientFactory.CreateClient("Timeout5s");
-		hc.BaseAddress = new Uri("https://cn.bing.com/HPImageArchive.aspx");
+		hc.BaseAddress = new("https://cn.bing.com/HPImageArchive.aspx");
 		// QueryString: 
 		if (_fileInfo!.Exists) { // 缓存文件存在
 			try { // 读取缓存文件
