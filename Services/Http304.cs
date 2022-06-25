@@ -29,7 +29,7 @@ public class Http304 : IHttp304 {
 			// Set the 304 status code.
 			Response.StatusCode = (int)HttpStatusCode.NotModified;
 		}
-		_logger.LogDebug("Http304 服务：{}设置 HTTP 304.", isSet ? "已" : "未");
+		_logger.LogDebug("{}设置 HTTP 304.", isSet ? "已" : "未");
 		return isSet;
 	}
 

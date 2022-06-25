@@ -6,18 +6,19 @@ namespace API.Controllers;
 public class GetIPController : ControllerBase {
 	private readonly ILogger<GetIPController> _logger;
 	private readonly IHttp304 _http304;
+	private readonly IHttpConnectionInfo _connection;
 
-	public GetIPController(ILogger<GetIPController> logger, IHttp304 http304) {
+	public GetIPController(ILogger<GetIPController> logger, IHttpConnectionInfo connection, IHttp304 http304) {
 		_logger = logger;
 		_http304 = http304;
+		_connection = connection;
 	}
 
 	[HttpGet]
 	[ResponseCache(CacheProfileName = "Private1m")] // 客户端缓存1分钟
 	public IP? Get() { // 获取 IP 地址
-		var connection = HttpContext.Connection;
-		var address = connection.RemoteIpAddress;
-		_logger.LogDebug("GetIP: Client {}:{}", address?.AddressFamily == AddressFamily.InterNetworkV6 ? $"[{address}]" : address, connection.RemotePort);
+		var address = _connection.RemoteAddress;
+		_logger.LogDebug("GetIP: Client {}:{}", address?.AddressFamily == AddressFamily.InterNetworkV6 ? $"[{address}]" : address, _connection.RemotePort);
 		if (_http304.TrySet(true)) {
 			return null;
 		}
