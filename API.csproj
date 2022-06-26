@@ -6,6 +6,7 @@
 		<Platforms>x64</Platforms>
 		<Version>1.0.2.1</Version>
 		<Authors>LC</Authors>
+		<Copyright>Copyright © 2022 LC. All rights reserved.</Copyright>
 	</PropertyGroup>
 	<ItemGroup>
 		<Folder Include="wwwroot\" />
