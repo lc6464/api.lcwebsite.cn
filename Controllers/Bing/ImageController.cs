@@ -28,101 +28,106 @@ public class BingImageController : ControllerBase {
 
 	private string MapPath(string path) => Path.Combine(_webHostEnvironment.WebRootPath, path);
 
-	/// <summary>
-	/// 从必应 API 获取数据并写入临时文件
-	/// </summary>
-	/// <returns>当前的 URL</returns>
-	private async Task<string> GetURLAndWriteFile() {
+	private async Task<BingAPIRoot?> GetBingAPI(int count) {
 		using var hc = _httpClientFactory.CreateClient("Timeout5s");
 		hc.BaseAddress = new("https://cn.bing.com/HPImageArchive.aspx");
-		// QueryString: 
-		if (_fileInfo!.Exists) { // 缓存文件存在
+		try {
+			return await hc.GetFromJsonAsync<BingAPIRoot>($"?format=js&n={count}&idx={_id}").ConfigureAwait(false);
+		} catch (Exception e) {
+			_logger.LogCritical("在连接服务器时发生异常：{}", e);
+		}
+		return null;
+	}
+
+	/// <summary>
+	/// 处理 GetBingAPI 返回的数据
+	/// </summary>
+	/// <param name="root">GetBingAPI 返回的数据</param>
+	/// <param name="i">循环处理行时的中间变量</param>
+	/// <param name="lines">要写入文件的内容</param>
+	/// <param name="url">输出的 URL</param>
+	/// <returns>如果处理成功，则为 <see cref="true"/>，否则为 <see cref="false"/></returns>
+	private bool TryProcessData(BingAPIRoot? root, int i, ref List<string?> lines, out string url) {
+		if (root == null) {
+			url = "连接必应服务器失败！";
+			return false;
+		}
+
+		if (root?.Images == null || root?.Images.Length == 0) {
+			_logger.LogCritical("获取到的 URL 为空！");
+			url = "未获取到 URL！";
+			return false;
+		}
+
+		for (int a = _lines - 1, b = 0; a >= i + 1; a--, b++) // a >= _lines - n
+			lines[a] = root?.Images[b].Url;
+
+		try {
+			using var writer = _fileInfo!.CreateText();
+
+			foreach (string? one in lines) writer.WriteLine(one);
+			
+			writer.Flush();
+			
+			_logger.LogDebug("写入缓存文件成功。");
+		} catch (Exception e) {
+			_logger.LogError("写入缓存文件时发生异常：{}", e);
+		}
+		
+		url = root?.Images[0].Url!;
+		return true;
+	}
+
+	
+	private bool TryProcessExistsLines(out bool exists, out List<string?> lines) {
+		exists = _fileInfo!.Exists;
+		lines = new();        
+		if (exists) {
 			try { // 读取缓存文件
 				using var reader = _fileInfo.OpenText();
 				string? line = reader.ReadLine();
-				List<string?> lines = new();
 				while (line != null) { // 把已有的行全部加入 List
 					lines.Add(line);
 					line = reader.ReadLine();
 				}
 				reader.BaseStream.Dispose();
 				while (lines.Count < _lines) lines.Add(""); // 补足行
-
-
-				int i = _lines - 2; // (_lines - 1) - 1
-				while (i >= _lines - 8 && i >= 0 && string.IsNullOrWhiteSpace(lines[i])) i--;
-				// n = _lines - i - 1
-
-				try { // HTTP Get
-					var root = await hc.GetFromJsonAsync<BingAPIRoot>($"?format=js&n={_lines - i - 1}&idx={_id}").ConfigureAwait(false);
-
-					if (root.Images == null) {
-						_logger.LogCritical("获取到的 URL 为空！");
-						return "未获取到 URL！";
-					}
-
-					for (int a = _lines - 1, b = 0; a >= i + 1; a--, b++) { // a >= _lines - n
-						lines[a] = root.Images[b].Url;
-					}
-
-					try {
-						using var writer = _fileInfo.CreateText();
-
-						foreach (string? one in lines) {
-							writer.WriteLine(one);
-						}
-						writer.Flush();
-
-						_logger.LogDebug("写入缓存文件成功。");
-					} catch (Exception e) {
-						_logger.LogError("写入缓存文件时发生异常：{}", e);
-					}
-					return root.Images[0].Url;
-				} catch (Exception e) {
-					_logger.LogCritical("在连接服务器时发生异常：{}", e);
-					return "连接必应服务器失败！\r\n" + e.Message;
-				}
+				return true;
 			} catch (Exception e) {
 				_logger.LogCritical("读取缓存文件时发生异常：{}", e);
-				return "读取文件异常！";
+				return false;
 			}
-		} else { // 缓存文件不存在
-			List<string?> lines = new();
+		} else {
 			do lines.Add(""); while (lines.Count < _lines); // 补足行
+			return true;
+		}
+	}
+	
 
+	/// <summary>
+	/// 从必应 API 获取数据并写入临时文件
+	/// </summary>
+	/// <returns>当前的 URL</returns>
+	private async Task<string> GetAndProcessData() {
+
+		if (TryProcessExistsLines(out _, out List<string?> lines)) {
 			int i = _lines - 2; // (_lines - 1) - 1
-			while (i >= _lines - 8 && i >= 0) i--;
+			while (i >= _lines - 8 && i >= 0 && string.IsNullOrWhiteSpace(lines[i])) i--;
 			// n = _lines - i - 1
 
-			try { // HTTP Get
-				var root = await hc.GetFromJsonAsync<BingAPIRoot>($"?format=js&n={_lines - i - 1}&idx={_id}").ConfigureAwait(false);
+			var root = await GetBingAPI(_lines - i - 1).ConfigureAwait(false);
 
-				if (root.Images == null) {
-					_logger.LogCritical("获取到的 URL 为空！");
-					return "未获取到 URL！";
-				}
+			TryProcessData(root, i, ref lines, out var url);
+			return url;
+		} else {
+			var root = await GetBingAPI(1).ConfigureAwait(false);
+			if (root == null) return "连接必应服务器失败！";
 
-				for (int a = _lines - 1, b = 0; a >= i + 1; a--, b++) { // a >= _lines - n
-					lines[a] = root.Images[b].Url;
-				}
-
-				try {
-					using var writer = _fileInfo.CreateText();
-
-					foreach (string? one in lines) {
-						writer.WriteLine(one);
-					}
-					writer.Flush();
-
-					_logger.LogDebug("写入缓存文件成功。");
-				} catch (Exception e) {
-					_logger.LogError("写入缓存文件时发生异常：{}", e);
-				}
-				return root.Images[0].Url;
-			} catch (Exception e) {
-				_logger.LogCritical("在连接服务器时发生异常：{}", e);
-				return "连接必应服务器失败！\r\n" + e.Message;
+			if (root?.Images == null || root?.Images.Length == 0) {
+				_logger.LogCritical("获取到的 URL 为空！");
+				return "未获取到 URL！";
 			}
+			return root?.Images[0].Url!;
 		}
 	}
 	
@@ -155,7 +160,7 @@ public class BingImageController : ControllerBase {
 				reader.BaseStream.Dispose();
 				if (string.IsNullOrWhiteSpace(line)) { // 指定行不存在或为空
 					_logger.LogDebug("缓存文件 {} 对应行 {} 不存在或为空。", _filePath, _lines);
-					url = await GetURLAndWriteFile().ConfigureAwait(false); // 获取并写入
+					url = await GetAndProcessData().ConfigureAwait(false); // 获取并写入
 					if (url[0] != '/') { // 未获取到 URL
 						Response.Headers.Add("Cache-Control", "private,max-age=10"); // 发生异常时缓存 10 秒
 						return url;
@@ -171,7 +176,7 @@ public class BingImageController : ControllerBase {
 			}
 		} else { // 若不存在
 			_logger.LogDebug("缓存文件 {} 不存在。", _filePath);
-			url = await GetURLAndWriteFile().ConfigureAwait(false); // 获取并写入
+			url = await GetAndProcessData().ConfigureAwait(false); // 获取并写入
 			if (url[0] != '/') { // 未获取到 URL
 				Response.Headers.Add("Cache-Control", "private,max-age=10"); // 发生异常时缓存 10 秒
 				return url;
