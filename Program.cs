@@ -14,15 +14,16 @@ builder.Services.AddHttpContextAccessor()
 			policy.WithOrigins("https://lcwebsite.cn",
 				"https://d.lcwebsite.cn",
 				"https://test.lcwebsite.cn",
-				"https://www.lcwebsite.cn",
-				"https://lc6464.cn",
+				"https://www.lcwebsite.cn"//,
+				/*"https://lc6464.cn",
 				"https://d.lc6464.cn",
 				"https://test.lc6464.cn",
 				"https://www.lc6464.cn",
 				"http://lc6464.cn",
 				"http://d.lc6464.cn",
 				"http://test.lc6464.cn",
-				"http://www.lc6464.cn");
+				"http://www.lc6464.cn");*/
+				);
 		});
 	}).AddResponseCompression(options => {
 		options.EnableForHttps = true;
@@ -53,7 +54,7 @@ var app = builder.Build();
 app.UseResponseCompression();
 
 app.UseStaticFiles(new StaticFileOptions {
-	OnPrepareResponse = context => context.Context.Response.Headers.Add("Cache-Control","public,max-age=864000") // 十天
+	OnPrepareResponse = context => context.Context.Response.Headers.CacheControl = "public,max-age=864000" // 十天
 });
 
 app.MapControllers();
