@@ -13,7 +13,7 @@ public class HelloController : ControllerBase {
 	}
 
 	[HttpGet]
-	[ResponseCache(CacheProfileName = "NoCache")]
+	[ResponseCache(CacheProfileName = "NoStore")]
 	public Hello Get() { // 打个招呼
 		var address = _info.RemoteAddress;
 		_logger.LogDebug("Hello! Client {}:{} on {}", address?.AddressFamily == AddressFamily.InterNetworkV6 ? $"[{address}]" : address, _info.RemotePort, _info.Protocol);

@@ -1,8 +1,7 @@
 ﻿var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHttpContextAccessor()
-	.AddScoped<IHttpConnectionInfo, API.Services.HttpConnectionInfo>()
-	.AddScoped<IHttp304, API.Services.Http304>()
+builder.Services
+	.AddHttp304() // 添加 Http304 和 HttpConnectionInfo 服务
 	.AddMemoryCache()
 	.AddResponseCaching()
 	.AddCors(options => {
@@ -14,8 +13,8 @@ builder.Services.AddHttpContextAccessor()
 			policy.WithOrigins("https://lcwebsite.cn",
 				"https://d.lcwebsite.cn",
 				"https://test.lcwebsite.cn",
-				"https://www.lcwebsite.cn"//,
-				/*"https://lc6464.cn",
+				"https://www.lcwebsite.cn"/*,
+				"https://lc6464.cn",
 				"https://d.lc6464.cn",
 				"https://test.lc6464.cn",
 				"https://www.lc6464.cn",
@@ -38,7 +37,8 @@ builder.Services.AddHttpContextAccessor()
 		options.CacheProfiles.Add("Private5m", new() { Duration = 300, Location = ResponseCacheLocation.Client });
 		options.CacheProfiles.Add("Private1m", new() { Duration = 60, Location = ResponseCacheLocation.Client });
 		options.CacheProfiles.Add("NoCache", new() { Duration = 0, Location = ResponseCacheLocation.None });
-});
+		options.CacheProfiles.Add("NoStore", new() { NoStore = true });
+	});
 
 builder.Logging.AddEventLog(eventLogSettings => {
 	eventLogSettings.LogName = "api.lcwebsite.cn";
@@ -54,7 +54,7 @@ var app = builder.Build();
 app.UseResponseCompression();
 
 app.UseStaticFiles(new StaticFileOptions {
-	OnPrepareResponse = context => context.Context.Response.Headers.CacheControl = "public,max-age=864000" // 十天
+	OnPrepareResponse = context => context.Context.Response.Headers.CacheControl = "public,max-age=2592000" // 30天
 });
 
 app.MapControllers();
