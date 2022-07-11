@@ -15,15 +15,17 @@
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.1" />
 		<PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
 		<PackageReference Include="LC6464.ASPNET.Http304" Version="1.0.0" />
+		<PackageReference Include="LC6464.ASPNET.AddResponseHeaders" Version="1.0.0" />
 	</ItemGroup>
 	<ItemGroup>
-		<Using Include="Microsoft.AspNetCore.Mvc" />
 		<Using Include="System.Text.Json" />
 		<Using Include="System.Text.Json.Serialization" />
+		<Using Include="Microsoft.AspNetCore.Mvc" />
+		<Using Include="Microsoft.Extensions.Caching.Memory" />
 		<Using Include="API" />
 		<Using Include="API.Models" />
 		<Using Include="LC6464.ASPNET.HttpConnectionInfo" />
 		<Using Include="LC6464.ASPNET.Http304" />
-		<Using Include="Microsoft.Extensions.Caching.Memory" />
+		<Using Include="LC6464.ASPNET.AddResponseHeaders" />
 	</ItemGroup>
 </Project>

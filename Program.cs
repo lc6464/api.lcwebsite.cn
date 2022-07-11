@@ -26,7 +26,7 @@ builder.Services
 		});
 	}).AddResponseCompression(options => {
 		options.EnableForHttps = true;
-		options.ExcludedMimeTypes = new[] { "application/json" }; // 这压缩不是浪费性能吗？
+		options.ExcludedMimeTypes = new[] { "application/json" }; // 这压缩不是浪费性能吗？没起太大作用
 	}).AddControllers(options => {
 		options.CacheProfiles.Add("Private30d", new() { Duration = 2592000, Location = ResponseCacheLocation.Client });
 		options.CacheProfiles.Add("Public30d", new() { Duration = 2592000, Location = ResponseCacheLocation.Any });
@@ -59,6 +59,14 @@ app.UseResponseCompression();
 app.UseCors();
 
 app.UseResponseCaching();
+
+app.UseAddResponseHeaders(new HeaderDictionary {
+	{ "Expect-CT", "max-age=31536000; enforce" },
+	{ "Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload" }/*,
+	{ "X-XSS-Protection", "1; mode=block" },
+	{ "X-Content-Type-Options", "nosniff" },
+	{ "Content-Security-Policy", "upgrade-insecure-requests; default-src 'self' https://*.lcwebsite.cn 'unsafe-inline' 'unsafe-eval'; img-src 'self' https://*.lcwebsite.cn https://*.bing.com; frame-ancestors 'self' https://*.lcwebsite.cn" }*/
+});
 
 app.UseStaticFiles(new StaticFileOptions {
 	OnPrepareResponse = context => context.Context.Response.Headers.CacheControl = "public,max-age=2592000" // 30天
