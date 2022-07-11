@@ -21,8 +21,7 @@ builder.Services
 				"http://lc6464.cn",
 				"http://d.lc6464.cn",
 				"http://test.lc6464.cn",
-				"http://www.lc6464.cn");*/
-				);
+				"http://www.lc6464.cn"*/);
 		});
 	}).AddResponseCompression(options => {
 		options.EnableForHttps = true;

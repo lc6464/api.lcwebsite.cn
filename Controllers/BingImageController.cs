@@ -97,10 +97,10 @@ public class BingImageController : ControllerBase {
 				_logger.LogCritical("读取缓存文件时发生异常：{}", e);
 				return false;
 			}
-		} else {
-			do lines.Add(""); while (lines.Count < _lines); // 补足行
-			return true;
 		}
+		
+		do lines.Add(""); while (lines.Count < _lines); // 补足行
+		return true;
 	}
 	
 
@@ -109,7 +109,6 @@ public class BingImageController : ControllerBase {
 	/// </summary>
 	/// <returns>当前的 URL</returns>
 	private async Task<string> GetAndProcessData() {
-
 		if (TryProcessExistsLines(out _, out List<string?> lines)) {
 			int i = _lines - 2; // (_lines - 1) - 1
 			while (i >= _lines - 8 && i >= 0 && string.IsNullOrWhiteSpace(lines[i])) i--;
@@ -119,7 +118,9 @@ public class BingImageController : ControllerBase {
 
 			TryProcessData(root, i, ref lines, out var url);
 			return url;
-		} else {
+		}
+
+		{
 			var root = await GetBingAPI(1).ConfigureAwait(false);
 			if (root == null) return "连接必应服务器失败！";
 

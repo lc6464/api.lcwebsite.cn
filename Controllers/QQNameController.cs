@@ -35,15 +35,18 @@ public class QQNameController : ControllerBase {
 		try {
 			var result = Encoding.GetEncoding("GB18030").GetString(await hc.GetByteArrayAsync("?uins=" + qq).ConfigureAwait(false)); // Get 数据
 			Regex head = new(@$"portraitCallBack\(\{{""{qq}"":\[""http://qlogo\d\d?\.store\.qq\.com/qzone/{qq}/{qq}/100"",((\-)?\d{{1,8}},){{5}}""");
+
+			using var entry = _memoryCache.CreateEntry(cacheKey); // 创建内存缓存
+			entry.SlidingExpiration = TimeSpan.FromMinutes(2); // 滑动过期2分钟
+			entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10); // 绝对过期10分钟
+
 			if (head.IsMatch(result)) {
 				string rawStr = result;
 				result = Regex.Replace(Regex.Replace(result, head.ToString(), ""), @""",(\-)?\d{1,8}\]\}\)", ""); // 处理数据
 				result = System.Web.HttpUtility.HtmlDecode(result).Replace(@"\", @"\\").Replace("\"", @"\""");
 
-				using var entry = _memoryCache.CreateEntry(cacheKey); // 写入内存缓存
-				entry.Value = result;
-				entry.SlidingExpiration = TimeSpan.FromMinutes(2); // 滑动过期2分钟
-				entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10); // 绝对过期10分钟
+				entry.Value = result; // 写入内存缓存
+
 				_logger.LogDebug("已写入内存缓存：{}: {}", cacheKey, result);
 
 				_logger.LogDebug("成功获取 {}: {}，原始数据：{}", qq, result, rawStr);
@@ -51,19 +54,17 @@ public class QQNameController : ControllerBase {
 				if (_http304.TrySet($"{false}|{result}")) return null;
 				
 				return new() { Code = 0, Name = result };
-			} else {
-				using var entry = _memoryCache.CreateEntry(cacheKey); // 写入内存缓存
-				entry.Value = null;
-				entry.SlidingExpiration = TimeSpan.FromMinutes(2); // 滑动过期2分钟
-				entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10); // 绝对过期10分钟
-				_logger.LogDebug("已写入内存缓存：{}: {}", cacheKey, null);
-
-				_logger.LogInformation("获取 {} 时未能匹配，原始数据：{}", qq, result);
-				
-				if (_http304.TrySet($"{true}|{null}")) return null;
-
-				return new() { Code = 2, Message = "无此 QQ 账号！" };
 			}
+			
+			entry.Value = null; // 写入内存缓存
+			
+			_logger.LogDebug("已写入内存缓存：{}: {}", cacheKey, null);
+
+			_logger.LogInformation("获取 {} 时未能匹配，原始数据：{}", qq, result);
+			
+			if (_http304.TrySet($"{true}|{null}")) return null;
+
+			return new() { Code = 2, Message = "无此 QQ 账号！" };
 		} catch (Exception e) {
 			_logger.LogCritical("在 Get {} 时连接至QQ服务器过程中发生异常：{}", qq, e);
 			return new() { Code = 3, Message = "无法连接 QQ API 服务器！"};
