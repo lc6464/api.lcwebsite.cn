@@ -26,6 +26,7 @@ builder.Services
 		});
 	}).AddResponseCompression(options => {
 		options.EnableForHttps = true;
+		options.ExcludedMimeTypes = new[] { "application/json" }; // 这压缩不是浪费性能吗？
 	}).AddControllers(options => {
 		options.CacheProfiles.Add("Private30d", new() { Duration = 2592000, Location = ResponseCacheLocation.Client });
 		options.CacheProfiles.Add("Public30d", new() { Duration = 2592000, Location = ResponseCacheLocation.Any });
@@ -49,20 +50,20 @@ builder.Services.AddHttpClient("Timeout5s", client => {
 	client.Timeout = new(0, 0, 5);
 });
 
+System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
 var app = builder.Build();
 
 app.UseResponseCompression();
+
+app.UseCors();
+
+app.UseResponseCaching();
 
 app.UseStaticFiles(new StaticFileOptions {
 	OnPrepareResponse = context => context.Context.Response.Headers.CacheControl = "public,max-age=2592000" // 30天
 });
 
 app.MapControllers();
-
-app.UseCors();
-
-app.UseResponseCaching();
-
-System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
 app.Run();
