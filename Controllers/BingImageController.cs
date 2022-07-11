@@ -109,27 +109,27 @@ public class BingImageController : ControllerBase {
 	/// </summary>
 	/// <returns>当前的 URL</returns>
 	private async Task<string> GetAndProcessData() {
-		BingAPIRoot? root;
-		
 		if (TryProcessExistsLines(out _, out List<string?> lines)) {
 			int i = _lines - 2; // (_lines - 1) - 1
 			while (i >= _lines - 8 && i >= 0 && string.IsNullOrWhiteSpace(lines[i])) i--;
 			// n = _lines - i - 1
 
-			root = await GetBingAPI(_lines - i - 1).ConfigureAwait(false);
+			var root = await GetBingAPI(_lines - i - 1).ConfigureAwait(false);
 
 			TryProcessData(root, i, ref lines, out var url);
 			return url;
 		}
-		
-		root = await GetBingAPI(1).ConfigureAwait(false);
-		if (root == null) return "连接必应服务器失败！";
 
-		if (root?.Images == null || root?.Images.Length == 0) {
-			_logger.LogCritical("获取到的 URL 为空！");
-			return "未获取到 URL！";
+		{
+			var root = await GetBingAPI(1).ConfigureAwait(false);
+			if (root == null) return "连接必应服务器失败！";
+
+			if (root?.Images == null || root?.Images.Length == 0) {
+				_logger.LogCritical("获取到的 URL 为空！");
+				return "未获取到 URL！";
+			}
+			return root?.Images[0].Url!;
 		}
-		return root?.Images[0].Url!;
 	}
 	
 
