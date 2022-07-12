@@ -32,7 +32,10 @@ public class BingImageController : ControllerBase {
 		using var hc = _httpClientFactory.CreateClient("Timeout5s");
 		hc.BaseAddress = new("https://cn.bing.com/HPImageArchive.aspx");
 		try {
-			return await hc.GetFromJsonAsync<BingAPIRoot>($"?format=js&n={count}&idx={_id}").ConfigureAwait(false);
+			DateTime start = DateTime.Now;
+			var result = await hc.GetFromJsonAsync<BingAPIRoot>($"?format=js&n={count}&idx={_id}").ConfigureAwait(false);
+			Response.Headers.Add("Server-Timing", $"g;desc=\"Get API\";dur={(DateTime.Now - start).TotalMilliseconds}"); // Server Timing API
+			return result;
 		} catch (Exception e) {
 			_logger.LogCritical("在连接服务器时发生异常：{}", e);
 		}

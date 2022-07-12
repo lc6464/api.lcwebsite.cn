@@ -29,8 +29,10 @@ public class BiliVideoInfoController : ControllerBase {
 		using var hc = _httpClientFactory.CreateClient("Timeout5s");
 		hc.BaseAddress = new("https://api.bilibili.com/x/web-interface/archive/stat");
 		try {
+			DateTime start = DateTime.Now;
 			info = await hc.GetFromJsonAsync<BiliVideoInfo>(queryString).ConfigureAwait(false);
-			
+			Response.Headers.Add("Server-Timing", $"g;desc=\"Get API\";dur={(DateTime.Now - start).TotalMilliseconds}"); // Server Timing API
+
 			using var entry = _memoryCache.CreateEntry(cacheKey); // 写入内存缓存
 			entry.Value = info;
 			entry.SlidingExpiration = TimeSpan.FromMinutes(15); // 滑动过期15分钟
