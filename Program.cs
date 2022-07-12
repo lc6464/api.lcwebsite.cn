@@ -61,10 +61,10 @@ app.UseResponseCaching();
 
 app.UseAddResponseHeaders(new HeaderDictionary {
 	{ "Expect-CT", "max-age=31536000; enforce" },
-	{ "Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload" }/*,
+	{ "Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload" },
+	{ "Content-Security-Policy", "upgrade-insecure-requests; default-src 'self' https://*.lcwebsite.cn 'unsafe-inline' 'unsafe-eval'; img-src 'self' https://*.lcwebsite.cn https://*.bing.com/th; frame-ancestors 'self' https://*.lcwebsite.cn" }/*,
 	{ "X-XSS-Protection", "1; mode=block" },
-	{ "X-Content-Type-Options", "nosniff" },
-	{ "Content-Security-Policy", "upgrade-insecure-requests; default-src 'self' https://*.lcwebsite.cn 'unsafe-inline' 'unsafe-eval'; img-src 'self' https://*.lcwebsite.cn https://*.bing.com/th; frame-ancestors 'self' https://*.lcwebsite.cn" }*/
+	{ "X-Content-Type-Options", "nosniff" }*/
 });
 
 app.UseStaticFiles(new StaticFileOptions {
