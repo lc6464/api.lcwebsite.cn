@@ -64,7 +64,7 @@ app.UseAddResponseHeaders(new HeaderDictionary {
 	{ "Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload" }/*,
 	{ "X-XSS-Protection", "1; mode=block" },
 	{ "X-Content-Type-Options", "nosniff" },
-	{ "Content-Security-Policy", "upgrade-insecure-requests; default-src 'self' https://*.lcwebsite.cn 'unsafe-inline' 'unsafe-eval'; img-src 'self' https://*.lcwebsite.cn https://*.bing.com; frame-ancestors 'self' https://*.lcwebsite.cn" }*/
+	{ "Content-Security-Policy", "upgrade-insecure-requests; default-src 'self' https://*.lcwebsite.cn 'unsafe-inline' 'unsafe-eval'; img-src 'self' https://*.lcwebsite.cn https://*.bing.com/th; frame-ancestors 'self' https://*.lcwebsite.cn" }*/
 });
 
 app.UseStaticFiles(new StaticFileOptions {
