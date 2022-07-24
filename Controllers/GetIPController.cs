@@ -19,8 +19,7 @@ public class GetIPController : ControllerBase {
 	public IP? Get() { // 获取 IP 地址
 		var address = _info.RemoteAddress;
 		_logger.LogDebug("GetIP: Client {}:{} on {}", address?.AddressFamily == AddressFamily.InterNetworkV6 ? $"[{address}]" : address, _info.RemotePort, _info.Protocol);
-		
-		if (_http304.TrySet(true, _info.Protocol)) return null;
-		return new(_info);
+
+		return _http304.TrySet(true, _info.Protocol) ? null : (new(_info));
 	}
 }

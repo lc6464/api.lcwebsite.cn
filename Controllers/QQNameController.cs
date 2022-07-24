@@ -21,19 +21,19 @@ public class QQNameController : ControllerBase {
 	[ResponseCache(CacheProfileName = "Private10m")] // 与绝对过期时间匹配
 	public async Task<QQName?> Get(string qq) {
 
-		string cacheKey = "QQNameAPI-" + qq;
+		var cacheKey = "QQNameAPI-" + qq;
 		if (_memoryCache.TryGetValue(cacheKey, out string? qqName)) {
 			_logger.LogDebug("已命中内存缓存：{}: {}", cacheKey, qqName);
-			
-			if (_http304.TrySet($"{qqName == null}|{qqName}")) return null;
-			
-			return qqName == null ? new() { Code = 2, Message = "无此 QQ 账号！" } : new() { Code = 0, Name = qqName };
+
+			return _http304.TrySet($"{qqName == null}|{qqName}")
+				? null
+				: qqName == null ? new() { Code = 2, Message = "无此 QQ 账号！" } : new() { Code = 0, Name = qqName };
 		}
 
 		using var hc = _httpClientFactory.CreateClient("Timeout5s");
 		hc.BaseAddress = new("https://r.qzone.qq.com/fcg-bin/cgi_get_portrait.fcg");
 		try {
-			DateTime start = DateTime.Now;
+			var start = DateTime.Now;
 			var data = await hc.GetByteArrayAsync("?uins=" + qq).ConfigureAwait(false);
 			Response.Headers.Add("Server-Timing", $"g;desc=\"Get API\";dur={(DateTime.Now - start).TotalMilliseconds}"); // Server Timing API
 			var result = Encoding.GetEncoding("GB18030").GetString(data); // Get 数据
@@ -44,7 +44,7 @@ public class QQNameController : ControllerBase {
 			entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10); // 绝对过期10分钟
 
 			if (head.IsMatch(result)) {
-				string rawStr = result;
+				var rawStr = result;
 				result = Regex.Replace(Regex.Replace(result, head.ToString(), ""), @""",(\-)?\d{1,8}\]\}\)", ""); // 处理数据
 				result = System.Web.HttpUtility.HtmlDecode(result).Replace(@"\", @"\\").Replace("\"", @"\""");
 
@@ -54,23 +54,19 @@ public class QQNameController : ControllerBase {
 
 				_logger.LogDebug("成功获取 {}: {}，原始数据：{}", qq, result, rawStr);
 
-				if (_http304.TrySet($"{false}|{result}")) return null;
-				
-				return new() { Code = 0, Name = result };
+				return _http304.TrySet($"{false}|{result}") ? null : (new() { Code = 0, Name = result });
 			}
-			
+
 			entry.Value = null; // 写入内存缓存
-			
+
 			_logger.LogDebug("已写入内存缓存：{}: {}", cacheKey, null);
 
 			_logger.LogInformation("获取 {} 时未能匹配，原始数据：{}", qq, result);
-			
-			if (_http304.TrySet($"{true}|{null}")) return null;
 
-			return new() { Code = 2, Message = "无此 QQ 账号！" };
+			return _http304.TrySet($"{true}|{null}") ? null : (new() { Code = 2, Message = "无此 QQ 账号！" });
 		} catch (Exception e) {
 			_logger.LogCritical("在 Get {} 时连接至QQ服务器过程中发生异常：{}", qq, e);
-			return new() { Code = 3, Message = "无法连接 QQ API 服务器！"};
+			return new() { Code = 3, Message = "无法连接 QQ API 服务器！" };
 		}
 	}
 }
