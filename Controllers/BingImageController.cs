@@ -26,9 +26,7 @@ public class BingImageController : ControllerBase {
 		_memoryCache = memoryCache;
 	}
 
-	private string MapPath(string path) {
-		return Path.Combine(_webHostEnvironment.WebRootPath, path);
-	}
+	private string MapPath(string path) => Path.Combine(_webHostEnvironment.WebRootPath, path);
 
 	private async Task<BingAPIRoot?> GetBingAPI(int count) {
 		using var hc = _httpClientFactory.CreateClient("Timeout5s");
