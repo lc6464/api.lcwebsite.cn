@@ -4,16 +4,15 @@ builder.Services
 	.AddHttp304() // 添加 Http304 和 HttpConnectionInfo 服务
 	.AddMemoryCache()
 	.AddResponseCaching()
-	.AddCors(options => {
-		options.AddDefaultPolicy(policy => {
-			policy.AllowAnyHeader();
-			policy.AllowAnyMethod();
-			policy.AllowCredentials();
-			policy.SetPreflightMaxAge(TimeSpan.FromDays(1));
-			policy.WithOrigins("https://lcwebsite.cn",
-				"https://d.lcwebsite.cn",
-				"https://test.lcwebsite.cn",
-				"https://www.lcwebsite.cn"/*,
+	.AddCors(options => options.AddDefaultPolicy(policy => {
+		policy.AllowAnyHeader();
+		policy.AllowAnyMethod();
+		policy.AllowCredentials();
+		policy.SetPreflightMaxAge(TimeSpan.FromDays(1));
+		policy.WithOrigins("https://lcwebsite.cn",
+			"https://d.lcwebsite.cn",
+			"https://test.lcwebsite.cn",
+			"https://www.lcwebsite.cn"/*,
 				"https://lc6464.cn",
 				"https://d.lc6464.cn",
 				"https://test.lc6464.cn",
@@ -22,7 +21,14 @@ builder.Services
 				"http://d.lc6464.cn",
 				"http://test.lc6464.cn",
 				"http://www.lc6464.cn"*/);
-		});
+	})).AddHttpsRedirection(options => {
+		options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
+		options.HttpsPort = 443;
+	}).AddHsts(options => {
+		options.ExcludedHosts.Add("localhost");
+		options.IncludeSubDomains = true;
+		options.MaxAge = TimeSpan.FromDays(365);
+		options.Preload = true;
 	}).AddResponseCompression(options => {
 		options.EnableForHttps = true;
 		options.ExcludedMimeTypes = new[] { "application/json" }; // 这压缩不是浪费性能吗？没起太大作用
@@ -45,13 +51,16 @@ builder.Logging.AddEventLog(eventLogSettings => {
 	eventLogSettings.SourceName = "Websites";
 });
 
-builder.Services.AddHttpClient("Timeout5s", client => {
-	client.Timeout = new(0, 0, 5);
-});
+builder.Services.AddHttpClient("Timeout5s", client => client.Timeout = new(0, 0, 5));
 
 System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
 var app = builder.Build();
+
+if (!app.Environment.IsDevelopment()) {
+	app.UseHttpsRedirection()
+		.UseHsts();
+}
 
 app.UseResponseCompression();
 
@@ -61,10 +70,8 @@ app.UseResponseCaching();
 
 app.UseAddResponseHeaders(new HeaderDictionary {
 	{ "Expect-CT", "max-age=31536000; enforce" },
-	{ "Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload" },
-	{ "Content-Security-Policy", "upgrade-insecure-requests; default-src 'self' https://*.lcwebsite.cn 'unsafe-inline' 'unsafe-eval'; img-src 'self' https://*.lcwebsite.cn https://*.bing.com/th; frame-ancestors 'self' https://*.lcwebsite.cn" }/*,
-	{ "X-XSS-Protection", "1; mode=block" },
-	{ "X-Content-Type-Options", "nosniff" }*/
+	{ "Content-Security-Policy", "upgrade-insecure-requests; default-src 'self' https://*.lcwebsite.cn 'unsafe-inline'; img-src 'self' https://*.lcwebsite.cn https://*.bing.com/th; frame-ancestors 'self' https://*.lcwebsite.cn" },
+	{ "X-Content-Type-Options", "nosniff" }
 });
 
 app.UseStaticFiles(new StaticFileOptions {
