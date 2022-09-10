@@ -1,4 +1,6 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
 	.AddHttp304() // 添加 Http304 和 HttpConnectionInfo 服务
@@ -53,8 +55,6 @@ builder.Logging.AddEventLog(eventLogSettings => {
 
 builder.Services.AddHttpClient("Timeout5s", client => client.Timeout = new(0, 0, 5));
 
-System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment()) {
@@ -62,21 +62,16 @@ if (!app.Environment.IsDevelopment()) {
 		.UseHsts();
 }
 
-app.UseResponseCompression();
-
-app.UseCors();
-
-app.UseResponseCaching();
-
-app.UseAddResponseHeaders(new HeaderDictionary {
-	{ "Expect-CT", "max-age=31536000; enforce" },
-	{ "Content-Security-Policy", "upgrade-insecure-requests; default-src 'self' https://*.lcwebsite.cn 'unsafe-inline'; img-src 'self' https://*.lcwebsite.cn https://*.bing.com/th; frame-ancestors 'self' https://*.lcwebsite.cn" },
-	{ "X-Content-Type-Options", "nosniff" }
-});
-
-app.UseStaticFiles(new StaticFileOptions {
-	OnPrepareResponse = context => context.Context.Response.Headers.CacheControl = "public,max-age=2592000" // 30天
-});
+app.UseResponseCompression()
+	.UseCors()
+	.UseResponseCaching()
+	.UseAddResponseHeaders(new HeaderDictionary {
+		{ "Expect-CT", "max-age=31536000; enforce" },
+		{ "Content-Security-Policy", "upgrade-insecure-requests; default-src 'self' https://*.lcwebsite.cn 'unsafe-inline'; img-src 'self' https://*.lcwebsite.cn https://*.bing.com/th; frame-ancestors 'self' https://*.lcwebsite.cn" },
+		{ "X-Content-Type-Options", "nosniff" }
+	}).UseStaticFiles(new StaticFileOptions {
+		OnPrepareResponse = context => context.Context.Response.Headers.CacheControl = "public,max-age=2592000" // 30天
+	});
 
 app.MapControllers();
 
