@@ -4,7 +4,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Platforms>x64</Platforms>
-		<Version>1.0.6.1</Version>
+		<Version>1.1.0.0</Version>
 		<Authors>LC</Authors>
 		<Copyright>Copyright © 2022 LC. All rights reserved.</Copyright>
 	</PropertyGroup>
@@ -15,7 +15,7 @@
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.1" />
 		<PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
 		<PackageReference Include="LC6464.ASPNET.Http304" Version="1.0.0" />
-		<PackageReference Include="LC6464.ASPNET.AddResponseHeaders" Version="1.0.0" />
+		<PackageReference Include="LC6464.ASPNET.AddResponseHeaders" Version="1.1.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<Using Include="System.Text.Json" />

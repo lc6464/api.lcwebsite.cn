@@ -48,11 +48,6 @@ builder.Services
 		options.CacheProfiles.Add("NoStore", new() { NoStore = true });
 	});
 
-builder.Logging.AddEventLog(eventLogSettings => {
-	eventLogSettings.LogName = "api.lcwebsite.cn";
-	eventLogSettings.SourceName = "Websites";
-});
-
 builder.Services.AddHttpClient("Timeout5s", client => client.Timeout = new(0, 0, 5));
 
 var app = builder.Build();
