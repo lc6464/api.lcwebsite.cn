@@ -28,7 +28,7 @@ public class BingImageController : ControllerBase {
 
 	private string MapPath(string path) => Path.Combine(_webHostEnvironment.WebRootPath, path);
 
-	private async Task<BingAPIRoot?> GetBingAPI(int count) {
+	private async Task<BingAPIRoot?> GetBingAPIAsync(int count) {
 		using var hc = _httpClientFactory.CreateClient("Timeout5s");
 		hc.BaseAddress = new("https://cn.bing.com/HPImageArchive.aspx");
 		try {
@@ -120,7 +120,7 @@ public class BingImageController : ControllerBase {
 	/// 从必应 API 获取数据并写入临时文件
 	/// </summary>
 	/// <returns>当前的 URL</returns>
-	private async Task<string> GetAndProcessData() {
+	private async Task<string> GetAndProcessDataAsync() {
 		if (TryProcessExistsLines(out _, out var lines)) {
 			var i = _lines - 2; // (_lines - 1) - 1
 			while (i >= _lines - 8 && i >= 0 && string.IsNullOrWhiteSpace(lines[i])) {
@@ -128,14 +128,14 @@ public class BingImageController : ControllerBase {
 			}
 			// n = _lines - i - 1
 
-			var root = await GetBingAPI(_lines - i - 1).ConfigureAwait(false);
+			var root = await GetBingAPIAsync(_lines - i - 1).ConfigureAwait(false);
 
 			_ = TryProcessData(root, i, ref lines, out var url);
 			return url;
 		}
 
 		{
-			var root = await GetBingAPI(1).ConfigureAwait(false);
+			var root = await GetBingAPIAsync(1).ConfigureAwait(false);
 			if (root == null) {
 				return "连接必应服务器失败！";
 			}
@@ -150,7 +150,7 @@ public class BingImageController : ControllerBase {
 
 
 	[HttpGet]
-	public async Task<string?> Get(int id = 0) {
+	public async Task<string?> GetAsync(int id = 0) {
 		var cacheAge = DateTime.Today.AddDays(1) - DateTime.Now;
 
 		_id = id;
@@ -177,7 +177,7 @@ public class BingImageController : ControllerBase {
 				reader.BaseStream.Dispose();
 				if (string.IsNullOrWhiteSpace(line)) { // 指定行不存在或为空
 					_logger.LogDebug("缓存文件 {} 对应行 {} 不存在或为空。", _filePath, _lines);
-					url = await GetAndProcessData().ConfigureAwait(false); // 获取并写入
+					url = await GetAndProcessDataAsync().ConfigureAwait(false); // 获取并写入
 					if (url[0] != '/') { // 未获取到 URL
 						Response.Headers.CacheControl = "private,max-age=10"; // 发生异常时缓存 10 秒
 						return url;
@@ -193,7 +193,7 @@ public class BingImageController : ControllerBase {
 			}
 		} else { // 若不存在
 			_logger.LogDebug("缓存文件 {} 不存在。", _filePath);
-			url = await GetAndProcessData().ConfigureAwait(false); // 获取并写入
+			url = await GetAndProcessDataAsync().ConfigureAwait(false); // 获取并写入
 			if (url[0] != '/') { // 未获取到 URL
 				Response.Headers.CacheControl = "private,max-age=10"; // 发生异常时缓存 10 秒
 				return url;

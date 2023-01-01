@@ -19,7 +19,7 @@ public partial class QQNameController : ControllerBase {
 
 	[HttpGet]
 	[ResponseCache(CacheProfileName = "Private10m")] // 与绝对过期时间匹配
-	public async Task<QQName?> Get(string qq) {
+	public async Task<QQName?> GetAsync(string qq) {
 
 		var cacheKey = "QQNameAPI-" + qq;
 		if (_memoryCache.TryGetValue(cacheKey, out string? qqName)) {
