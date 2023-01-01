@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 
 namespace API.Models;
-public struct Hello {
+public readonly struct Hello {
 	private static readonly Assembly assembly = Assembly.GetExecutingAssembly();
 	public Hello(HttpContext context) => IP = new(context.Connection.RemoteIpAddress, context.Request.Protocol);
 

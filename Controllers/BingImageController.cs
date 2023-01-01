@@ -159,7 +159,7 @@ public class BingImageController : ControllerBase {
 		_lines = target.Day;
 
 		var cacheKey = "BingImageAPI-" + id;
-		if (_memoryCache.TryGetValue(cacheKey, out string url)) { // 内存缓存
+		if (_memoryCache.TryGetValue(cacheKey, out string? url)) { // 内存缓存
 			_logger.LogDebug("已命中内存缓存：{}", cacheKey);
 			_logger.LogDebug("输出的 URL：{}", url);
 			Response.Redirect("https://cn.bing.com" + url); // 重定向

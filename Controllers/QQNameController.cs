@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 namespace API.Controllers;
 [ApiController]
 [Route(@"[controller]/{qq:length(5,13):regex(^\d{{5,13}}$)}")]
-public class QQNameController : ControllerBase {
+public partial class QQNameController : ControllerBase {
 	private readonly ILogger<QQNameController> _logger;
 	private readonly IHttpClientFactory _httpClientFactory;
 	private readonly IMemoryCache _memoryCache;
@@ -45,7 +45,7 @@ public class QQNameController : ControllerBase {
 
 			if (head.IsMatch(result)) {
 				var rawStr = result;
-				result = Regex.Replace(Regex.Replace(result, head.ToString(), ""), @""",(\-)?\d{1,8}\]\}\)", ""); // 处理数据
+				result = aPartOfQQAPIResultRegex().Replace(head.Replace(result, ""), ""); // 处理数据
 				result = System.Web.HttpUtility.HtmlDecode(result).Replace(@"\", @"\\").Replace("\"", @"\""");
 
 				entry.Value = result; // 写入内存缓存
@@ -69,4 +69,9 @@ public class QQNameController : ControllerBase {
 			return new() { Code = 3, Message = "无法连接 QQ API 服务器！" };
 		}
 	}
+
+
+
+	[GeneratedRegex("\",(\\-)?\\d{1,8}\\]\\}\\)")]
+	private static partial Regex aPartOfQQAPIResultRegex();
 }

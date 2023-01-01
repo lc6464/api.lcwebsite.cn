@@ -7,11 +7,11 @@ builder.Services
 	.AddMemoryCache()
 	.AddResponseCaching()
 	.AddCors(options => options.AddDefaultPolicy(policy => {
-		policy.AllowAnyHeader();
-		policy.AllowAnyMethod();
-		policy.AllowCredentials();
-		policy.SetPreflightMaxAge(TimeSpan.FromDays(1));
-		policy.WithOrigins("https://lcwebsite.cn",
+		_ = policy.AllowAnyHeader();
+		_ = policy.AllowAnyMethod();
+		_ = policy.AllowCredentials();
+		_ = policy.SetPreflightMaxAge(TimeSpan.FromDays(1));
+		_ = policy.WithOrigins("https://lcwebsite.cn",
 			"https://d.lcwebsite.cn",
 			"https://test.lcwebsite.cn",
 			"https://www.lcwebsite.cn"/*,
@@ -53,7 +53,7 @@ builder.Services.AddHttpClient("Timeout5s", client => client.Timeout = new(0, 0,
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment()) {
-	app.UseHttpsRedirection()
+	_ = app.UseHttpsRedirection()
 		.UseHsts();
 }
 
