@@ -3,7 +3,7 @@
 LC 的网站的全新的 API！
 
 ## 搭建一个同样的 API
-请保证在部署设备上已安装 `ASP.NET Core 运行时 6.0` 或 `.NET SDK 6.0`（若要使用 IIS 部署请安装**托管捆绑包**，其中包含 IIS 支持）
+请保证在部署设备上已安装 `ASP.NET Core 运行时 7.0` 或 `.NET SDK 7.0`（若要使用 IIS 部署请安装**托管捆绑包**，其中包含 IIS 支持）
 - Windows
 	1. 在[最新的发行版](https://github.com/lc6464/api.lcwebsite.cn/releases/latest)中下载 Windows x64 版本
 	2. 解压文件
