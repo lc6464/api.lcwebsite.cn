@@ -46,7 +46,7 @@ public partial class QQNameController : ControllerBase {
 			if (head.IsMatch(result)) {
 				var rawStr = result;
 				result = aPartOfQQAPIResultRegex().Replace(head.Replace(result, ""), ""); // 处理数据
-				result = System.Web.HttpUtility.HtmlDecode(result).Replace(@"\", @"\\").Replace("\"", @"\""");
+				result = System.Net.WebUtility.HtmlDecode(result).Replace(@"\", @"\\").Replace("\"", @"\""");
 
 				entry.Value = result; // 写入内存缓存
 
@@ -64,7 +64,10 @@ public partial class QQNameController : ControllerBase {
 			_logger.LogInformation("获取 {} 时未能匹配，原始数据：{}", qq, result);
 
 			return _http304.TrySet($"{true}|{null}") ? null : (new() { Code = 2, Message = "无此 QQ 账号！" });
-		} catch (Exception e) {
+		} catch (HttpRequestException e) {
+			_logger.LogCritical("在 Get {} 时连接至QQ服务器过程中发生异常：{}", qq, e);
+			return new() { Code = 3, Message = "无法连接 QQ API 服务器！" };
+		} catch (TaskCanceledException e) {
 			_logger.LogCritical("在 Get {} 时连接至QQ服务器过程中发生异常：{}", qq, e);
 			return new() { Code = 3, Message = "无法连接 QQ API 服务器！" };
 		}

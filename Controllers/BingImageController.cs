@@ -36,6 +36,8 @@ public class BingImageController : ControllerBase {
 			var result = await hc.GetFromJsonAsync<BingAPIRoot>($"?format=js&n={count}&idx={_id}").ConfigureAwait(false);
 			Response.Headers.Add("Server-Timing", $"g;desc=\"Get API\";dur={(DateTime.Now - start).TotalMilliseconds}"); // Server Timing API
 			return result;
+		} catch (HttpRequestException e) {
+			_logger.LogCritical("在连接服务器时发生异常：{}", e);
 		} catch (Exception e) {
 			_logger.LogCritical("在连接服务器时发生异常：{}", e);
 		}
@@ -76,7 +78,11 @@ public class BingImageController : ControllerBase {
 			writer.Flush();
 
 			_logger.LogDebug("写入缓存文件成功。");
-		} catch (Exception e) {
+		} catch (System.Security.SecurityException e) {
+			_logger.LogError("写入缓存文件时发生异常：{}", e);
+		} catch (IOException e) {
+			_logger.LogError("写入缓存文件时发生异常：{}", e);
+		} catch (UnauthorizedAccessException e) {
 			_logger.LogError("写入缓存文件时发生异常：{}", e);
 		}
 
@@ -102,7 +108,10 @@ public class BingImageController : ControllerBase {
 				}
 
 				return true;
-			} catch (Exception e) {
+			} catch (System.Security.SecurityException e) {
+				_logger.LogCritical("读取缓存文件时发生异常：{}", e);
+				return false;
+			} catch (UnauthorizedAccessException e) {
 				_logger.LogCritical("读取缓存文件时发生异常：{}", e);
 				return false;
 			}
@@ -186,7 +195,11 @@ public class BingImageController : ControllerBase {
 					_logger.LogDebug("已命中缓存文件 {} 行 {}。", _filePath, _lines);
 					url = line; // 赋值
 				}
-			} catch (Exception e) { // 若读取失败
+			} catch (System.Security.SecurityException e) { // 若读取失败
+				_logger.LogCritical("读取缓存文件时发生异常：{}", e);
+				Response.Headers.CacheControl = "private,max-age=10"; // 发生异常时缓存 10 秒
+				return "读取文件异常！";
+			} catch (UnauthorizedAccessException e) { // 若读取失败
 				_logger.LogCritical("读取缓存文件时发生异常：{}", e);
 				Response.Headers.CacheControl = "private,max-age=10"; // 发生异常时缓存 10 秒
 				return "读取文件异常！";
