@@ -25,7 +25,7 @@ public partial class QQNameController : ControllerBase {
 		if (_memoryCache.TryGetValue(cacheKey, out string? qqName)) {
 			_logger.LogDebug("已命中内存缓存：{}: {}", cacheKey, qqName);
 
-			return _http304.TrySet($"{qqName == null}|{qqName}")
+			return _http304.TrySet($"{qqName == null}|{qqName}") // skipcq: CS-R1114 Visual Studio 代码清理盛情难却啊。
 				? null
 				: qqName == null
 					? new() { Code = 2, Message = "无此 QQ 账号！", IsCache = true }
