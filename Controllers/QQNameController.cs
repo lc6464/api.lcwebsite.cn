@@ -27,11 +27,11 @@ public partial class QQNameController : ControllerBase {
 
 			return _http304.TrySet($"{qqName == null}|{qqName}")
 				? null
-				: qqName == null ? new() { Code = 2, Message = "无此 QQ 账号！" } : new() { Code = 0, Name = qqName };
+				: qqName == null ? new() { Code = 2, Message = "无此 QQ 账号！", IsCache = true } : new() { Code = 0, Name = qqName, IsCache = true };
 		}
 
 		using var hc = _httpClientFactory.CreateClient("Timeout5s");
-		hc.BaseAddress = new("https://r.qzone.qq.com/fcg-bin/cgi_get_portrait.fcg");
+		hc.BaseAddress = new("https://users.qzone.qq.com/fcg-bin/cgi_get_portrait.fcg");
 		try {
 			var start = DateTime.Now;
 			var data = await hc.GetByteArrayAsync("?uins=" + qq).ConfigureAwait(false);
@@ -54,7 +54,7 @@ public partial class QQNameController : ControllerBase {
 
 				_logger.LogDebug("成功获取 {}: {}，原始数据：{}", qq, result, rawStr);
 
-				return _http304.TrySet($"{false}|{result}") ? null : (new() { Code = 0, Name = result });
+				return _http304.TrySet($"{false}|{result}") ? null : new() { Code = 0, Name = result, IsCache = false };
 			}
 
 			entry.Value = null; // 写入内存缓存
@@ -63,7 +63,7 @@ public partial class QQNameController : ControllerBase {
 
 			_logger.LogInformation("获取 {} 时未能匹配，原始数据：{}", qq, result);
 
-			return _http304.TrySet($"{true}|{null}") ? null : (new() { Code = 2, Message = "无此 QQ 账号！" });
+			return _http304.TrySet($"{true}|{null}") ? null : new() { Code = 2, Message = "无此 QQ 账号！", IsCache = false };
 		} catch (HttpRequestException e) {
 			_logger.LogCritical("在 Get {} 时连接至QQ服务器过程中发生异常：{}", qq, e);
 			return new() { Code = 3, Message = "无法连接 QQ API 服务器！" };
