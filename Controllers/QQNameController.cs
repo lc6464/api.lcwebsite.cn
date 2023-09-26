@@ -27,15 +27,17 @@ public partial class QQNameController : ControllerBase {
 
 			return _http304.TrySet($"{qqName == null}|{qqName}")
 				? null
-				: qqName == null ? new() { Code = 2, Message = "无此 QQ 账号！", IsCache = true } : new() { Code = 0, Name = qqName, IsCache = true };
+				: qqName == null
+					? new() { Code = 2, Message = "无此 QQ 账号！", IsCache = true }
+					: new() { Code = 0, Name = qqName, IsCache = true };
 		}
 
 		using var hc = _httpClientFactory.CreateClient("Timeout5s");
 		hc.BaseAddress = new("https://users.qzone.qq.com/fcg-bin/cgi_get_portrait.fcg");
 		try {
-			var start = DateTime.Now;
+			var start = DateTime.UtcNow;
 			var data = await hc.GetByteArrayAsync("?uins=" + qq).ConfigureAwait(false);
-			Response.Headers.Add("Server-Timing", $"g;desc=\"Get API\";dur={(DateTime.Now - start).TotalMilliseconds}"); // Server Timing API
+			Response.Headers.Add("Server-Timing", $"g;desc=\"Get API\";dur={(DateTime.UtcNow - start).TotalMilliseconds}"); // Server Timing API
 			var result = Encoding.GetEncoding("GB18030").GetString(data); // Get 数据
 			Regex head = new(@$"portraitCallBack\(\{{""{qq}"":\[""http://qlogo\d\d?\.store\.qq\.com/qzone/{qq}/{qq}/100"",((\-)?\d{{1,8}},){{5}}""");
 
