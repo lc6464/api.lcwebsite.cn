@@ -36,9 +36,8 @@ public partial class QQNameController : ControllerBase {
 		hc.BaseAddress = new("https://users.qzone.qq.com/fcg-bin/cgi_get_portrait.fcg");
 		try {
 			var start = DateTime.UtcNow;
-			var data = await hc.GetByteArrayAsync("?uins=" + qq).ConfigureAwait(false);
+			var result = await hc.GetStringAsync("?uins=" + qq).ConfigureAwait(false);
 			Response.Headers.Add("Server-Timing", $"g;desc=\"Get API\";dur={(DateTime.UtcNow - start).TotalMilliseconds}"); // Server Timing API
-			var result = Encoding.GetEncoding("GB18030").GetString(data); // Get 数据
 			Regex head = new(@$"portraitCallBack\(\{{""{qq}"":\[""http://qlogo\d\d?\.store\.qq\.com/qzone/{qq}/{qq}/100"",((\-)?\d{{1,8}},){{5}}""");
 
 			using var entry = _memoryCache.CreateEntry(cacheKey); // 创建内存缓存
