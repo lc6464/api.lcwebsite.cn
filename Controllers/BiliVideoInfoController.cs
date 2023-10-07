@@ -26,7 +26,7 @@ public class BiliVideoInfoController : ControllerBase {
 
 		var queryString = (id[..2] == "av") ? string.Concat("?aid=", id.AsSpan(2)) : ("?bvid=" + id);
 		using var hc = _httpClientFactory.CreateClient("Timeout5s");
-		hc.BaseAddress = new("https://api.bilibili.com/x/web-interface/archive/stat");
+		hc.BaseAddress = new("https://api.bilibili.com/x/web-interface/view");
 		try {
 			var start = DateTime.Now;
 			info = await hc.GetFromJsonAsync<BiliVideoInfo>(queryString).ConfigureAwait(false);
