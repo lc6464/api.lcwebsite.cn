@@ -169,7 +169,7 @@ public class BingImageController : ControllerBase {
 		if (_memoryCache.TryGetValue(cacheKey, out string? url)) { // 内存缓存
 			_logger.LogDebug("已命中内存缓存：{}", cacheKey);
 			_logger.LogDebug("输出的 URL：{}", url);
-			Response.Headers.CacheControl = "public,max-age=" + (int)(DateTime.Today.AddDays(1) - DateTime.Now).TotalSeconds;
+			Response.Headers.CacheControl = "public,max-age=" + (int)(DateTime.Today.AddDays(1) - DateTime.Now).TotalSeconds; // skipcq: CS-W1091 由于不知道必应服务器究竟如何处理，就按本地时间计算吧
 			Response.Redirect("https://cn.bing.com" + url, false, true); // 重定向
 			return null;
 		}
@@ -213,7 +213,7 @@ public class BingImageController : ControllerBase {
 		}
 
 
-		var cacheAge = DateTime.Today.AddDays(1) - DateTime.Now;
+		var cacheAge = DateTime.Today.AddDays(1) - DateTime.Now;  // skipcq: CS-W1091 由于不知道必应服务器究竟如何处理，就按本地时间计算吧
 		Response.Headers.CacheControl = "public,max-age=" + (int)cacheAge.TotalSeconds; // 缓存时间
 		_ = _memoryCache.Set(cacheKey, url, cacheAge);
 		_logger.LogDebug("已将 {} 写入内存缓存 {} ，有效时间 {}。", url, cacheKey, cacheAge);
