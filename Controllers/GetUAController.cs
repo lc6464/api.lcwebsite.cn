@@ -1,7 +1,7 @@
 ﻿namespace API.Controllers;
 [ApiController]
 [Route("[controller]")]
-public class GetUAController(ILogger<GetIPController> logger, IHttp304 http304) : ControllerBase {
+public class GetUAController(ILogger<GetUAController> logger, IHttp304 http304) : ControllerBase {
 	[HttpGet]
 	[ResponseCache(CacheProfileName = "Private1d")] // 客户端缓存1天
 	public UserAgent? Get() { // 获取 User-Agent

@@ -8,12 +8,12 @@ LC 的网站的全新的 API！
 	1. 在[最新的发行版](https://github.com/lc6464/api.lcwebsite.cn/releases/latest)中下载 Windows x64 版本
 	2. 解压文件
 	3. 运行 `API.exe` 或用 `dotnet cli` 运行 `API.dll`，也可以部署到 IIS（建议）
-	4. 在浏览器中访问 [localhost:5000](http://localhost:5000/Hello "localhost:5000")（若要更改端口号通过命令行参数、环境变量等方式更改，IIS 部署则在`绑定`中设定）
+	4. 在浏览器中访问 [localhost:5000](http://localhost:5000/Hello "localhost:5000/Hello")（若要更改端口号通过命令行参数、环境变量等方式更改，IIS 部署则在`绑定`中设定）
 - Linux
 	1. 在[最新的发行版](https://github.com/lc6464/api.lcwebsite.cn/releases/latest)中下载 Linux x64 版本
 	2. 解压文件
 	3. 运行 `API` 或用 `dotnet cli` 运行 `API.dll`
-	4. 在浏览器中访问 [localhost:5000](http://localhost:5000/Hello "localhost:5000")（若要更改端口号通过命令行参数、环境变量等方式更改）
+	4. 在浏览器中访问 [localhost:5000](http://localhost:5000/Hello "localhost:5000/Hello")（若要更改端口号通过命令行参数、环境变量等方式更改）
 - macOS
 	1. 参考下方教程自行编译
 
