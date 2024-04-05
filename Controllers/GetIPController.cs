@@ -3,23 +3,13 @@
 namespace API.Controllers;
 [ApiController]
 [Route("[controller]")]
-public class GetIPController : ControllerBase {
-	private readonly ILogger<GetIPController> _logger;
-	private readonly IHttp304 _http304;
-	private readonly IHttpConnectionInfo _info;
-
-	public GetIPController(ILogger<GetIPController> logger, IHttpConnectionInfo info, IHttp304 http304) {
-		_logger = logger;
-		_http304 = http304;
-		_info = info;
-	}
-
+public class GetIPController(ILogger<GetIPController> logger, IHttpConnectionInfo info, IHttp304 http304) : ControllerBase {
 	[HttpGet]
 	[ResponseCache(CacheProfileName = "Private1m")] // 客户端缓存1分钟
 	public IP? Get() { // 获取 IP 地址
-		var address = _info.RemoteAddress;
-		_logger.LogDebug("GetIP: Client {}:{} on {}", address?.AddressFamily == AddressFamily.InterNetworkV6 ? $"[{address}]" : address, _info.RemotePort, _info.Protocol);
+		var address = info.RemoteAddress;
+		logger.LogDebug("GetIP: Client {}:{} on {}", address?.AddressFamily == AddressFamily.InterNetworkV6 ? $"[{address}]" : address, info.RemotePort, info.Protocol);
 
-		return _http304.TrySet(true, _info.Protocol) ? null : new(_info);
+		return http304.TrySet(true, info.Protocol) ? null : new(info);
 	}
 }

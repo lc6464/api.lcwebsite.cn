@@ -1,5 +1,5 @@
 ﻿namespace API.Models;
-public struct BiliVideoInfo {
+public readonly struct BiliVideoInfo {
 	/// <summary>
 	/// 0：成功
 	/// -400：请求错误
@@ -8,63 +8,64 @@ public struct BiliVideoInfo {
 	/// 62002：稿件不可见
 	/// 62004：稿件审核中
 	/// </summary>
-	public int Code { get; set; }
-	public string Message { get; set; }
-	public BiliVideoInfoData? Data { get; set; }
+	public int Code { get; init; }
+	public string? Message { get; init; }
+	public BiliVideoInfoData? Data { get; init; }
 }
-public struct BiliVideoInfoData {
+
+public readonly struct BiliVideoInfoData {
 	/// <summary>
 	/// AV 号
 	/// </summary>
-	public ulong Aid { get; set; }
+	public ulong Aid { get; init; }
 
 	/// <summary>
 	/// BV 号
 	/// </summary>
-	public string Bvid { get; set; }
+	public string Bvid { get; init; }
 
 	/// <summary>
 	/// 播放量
 	/// </summary>
-	//public ulong View { get; set; }
+	//public ulong View { get; init; }
 
 	/// <summary>
 	/// 弹幕量
 	/// </summary>
-	//public uint Danmaku { get; set; }
+	//public uint Danmaku { get; init; }
 
 	/// <summary>
 	/// 评论量
 	/// </summary>
-	//public uint Reply { get; set; }
+	//public uint Reply { get; init; }
 
 	/// <summary>
 	/// 收藏量
 	/// </summary>
-	//public uint Favorite { get; set; }
+	//public uint Favorite { get; init; }
 
 	/// <summary>
 	/// 投币量
 	/// </summary>
-	//public uint Coin { get; set; }
+	//public uint Coin { get; init; }
 
 	/// <summary>
 	/// 分享量
 	/// </summary>
-	//public uint Share { get; set; }
+	//public uint Share { get; init; }
 
 	/// <summary>
 	/// 获赞量
 	/// </summary>
-	//public uint Like { get; set; }
+	//public uint Like { get; init; }
 
 	/// <summary>
 	/// 是否禁止转载
 	/// </summary>
-	//public byte No_reprint { get; set; }
+	//public byte No_reprint { get; init; }
 
 	/// <summary>
 	/// 视频类型 1：原创  2：转载
 	/// </summary>
-	//public byte Copyright { get; set; }
+	//public byte Copyright { get; init; }
 }

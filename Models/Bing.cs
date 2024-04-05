@@ -1,12 +1,12 @@
 ﻿namespace API.Models;
-public struct BingAPIRoot {
-	public BingImageData[]? Images { get; set; }
+public readonly struct BingAPIRoot {
+	public BingImageData[]? Images { get; init; }
 }
 
-public struct BingImageData {
-	//public string Fullstartdate { get; set; }
-	public string Url { get; set; }
-	//public string Copyright { get; set; }
-	//public string Copyrightlink { get; set; }
-	//public string Title { get; set; }
+public readonly struct BingImageData {
+	//public string Fullstartdate { get; init; }
+	public string Url { get; init; }
+	//public string Copyright { get; init; }
+	//public string Copyrightlink { get; init; }
+	//public string Title { get; init; }
 }

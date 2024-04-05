@@ -3,20 +3,12 @@
 namespace API.Controllers;
 [ApiController]
 [Route("[controller]")]
-public class HelloController : ControllerBase {
-	private readonly ILogger<HelloController> _logger;
-	private readonly IHttpConnectionInfo _info;
-
-	public HelloController(ILogger<HelloController> logger, IHttpConnectionInfo info) {
-		_logger = logger;
-		_info = info;
-	}
-
+public class HelloController(ILogger<HelloController> logger, IHttpConnectionInfo info) : ControllerBase {
 	[HttpGet]
 	[ResponseCache(CacheProfileName = "NoStore")]
 	public Hello Get() { // 打个招呼
-		var address = _info.RemoteAddress;
-		_logger.LogDebug("Hello! Client {}:{} on {}", address?.AddressFamily == AddressFamily.InterNetworkV6 ? $"[{address}]" : address, _info.RemotePort, _info.Protocol);
-		return new(_info);
+		var address = info.RemoteAddress;
+		logger.LogDebug("Hello! Client {}:{} on {}", address?.AddressFamily == AddressFamily.InterNetworkV6 ? $"[{address}]" : address, info.RemotePort, info.Protocol);
+		return new(info);
 	}
 }

@@ -33,7 +33,7 @@ builder.Services
 		options.Preload = true;
 	}).AddResponseCompression(options => {
 		options.EnableForHttps = true;
-		options.ExcludedMimeTypes = new[] { "application/json" }; // 这压缩不是浪费性能吗？没起太大作用
+		options.ExcludedMimeTypes = ["application/json"]; // 这压缩不是浪费性能吗？没起太大作用
 	}).AddControllers(options => {
 		options.CacheProfiles.Add("Private30d", new() { Duration = 2592000, Location = ResponseCacheLocation.Client });
 		options.CacheProfiles.Add("Public30d", new() { Duration = 2592000, Location = ResponseCacheLocation.Any });

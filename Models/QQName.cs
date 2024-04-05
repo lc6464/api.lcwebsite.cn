@@ -1,7 +1,7 @@
 ﻿namespace API.Models;
-public struct QQName {
-	public int Code { get; set; }
-	public string? Name { get; set; }
-	public string? Message { get; set; }
-	public bool? IsCache { get; set; }
+public readonly struct QQName {
+	public int Code { get; init; }
+	public string? Name { get; init; }
+	public string? Message { get; init; }
+	public bool? IsCache { get; init; }
 }
